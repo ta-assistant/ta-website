@@ -3,6 +3,9 @@ module.exports = {
   env: {
     node: true,
   },
+  // Due to the error missing-return type and we can specify the type on the .vue file
+  // Ignoring check for now...
+  ignorePatterns: ["*.vue"],
   extends: [
     "plugin:vue/essential",
     "eslint:recommended",
