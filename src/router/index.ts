@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Home from "../views/Home.vue";
 import SignIn from "../views/SignIn.vue";
+import WorkList from "../views/WorkList.vue";
 
 Vue.use(VueRouter);
 
@@ -25,6 +26,11 @@ const routes: Array<RouteConfig> = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/About.vue"),
   },
+  {
+    path: "/workList",
+    name: "Work List",
+    component: WorkList,
+  }
 ];
 
 const router = new VueRouter({
