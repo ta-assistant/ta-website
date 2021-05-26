@@ -31,7 +31,7 @@ export default {
     );
 
     const uiConfig = {
-      signInSuccessUrl: "/loginCallback",
+      signInSuccessUrl: "/course",
       signInOptions: [googleSigninProvider.providerId],
     };
     const ui = new fbui.auth.AuthUI(firebase.auth());
