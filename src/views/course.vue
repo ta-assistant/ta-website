@@ -8,14 +8,14 @@
 import firebase from "firebase";
 
 export default {
-  mounted() {
-    firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        console.log("Not signed in");
-        this.$router.push({ path: "/SignIn" });
-      }
-      console.log(user.toJSON());
-    });
-  },
+  // mounted() {
+  //   firebase.auth().onauthstatechanged((user) => {
+  //     if (!user) {
+  //       console.log("not signed in");
+  //       this.$router.push({ path: "/signin" });
+  //     }
+  //     console.log(user.tojson());
+  //   });
+  // },
 };
 </script>

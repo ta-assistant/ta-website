@@ -7,7 +7,8 @@
         </md-card-header>
 
         <md-card-content>
-          <section id="firebaseui-auth-container"></section>
+          <section id="firebaseui-auth-container">
+          </section>
         </md-card-content>
       </md-card>
     </div>
@@ -19,25 +20,25 @@ import firebase from "firebase";
 import * as fbui from "firebaseui";
 import "firebaseui/dist/firebaseui.css";
 
-export default {
+export default Vue.extend({
   test: () => {
     let auth = firebase.auth();
     console.log(auth.currentUser.toJSON());
   },
-  mounted() {
-    let googleSigninProvider = new firebase.auth.GoogleAuthProvider();
-    googleSigninProvider.addScope(
-      "https://www.googleapis.com/auth/classroom.courses.readonly"
-    );
+  // mounted() {
+  //   let googleSigninProvider = new firebase.auth.GoogleAuthProvider();
+  //   googleSigninProvider.addScope(
+  //     "https://www.googleapis.com/auth/classroom.courses.readonly"
+  //   );
 
-    const uiConfig = {
-      signInSuccessUrl: "/course",
-      signInOptions: [googleSigninProvider.providerId],
-    };
-    const ui = new fbui.auth.AuthUI(firebase.auth());
-    ui.start("#firebaseui-auth-container", uiConfig);
-  },
-};
+  //   const uiConfig = {
+  //     signInSuccessUrl: "/course",
+  //     signInOptions: [googleSigninProvider.providerId],
+  //   };
+  //   const ui = new fbui.auth.AuthUI(firebase.auth());
+  //   ui.start("#firebaseui-auth-container", uiConfig);
+  // },
+});
 </script>
 
 <style scoped>

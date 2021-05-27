@@ -9,13 +9,13 @@ import "vue-material/dist/theme/default.css";
 // Export the firebaseConfig From Firebase Console by creating a new app
 // and copy the Firebase Web app configuration and paste it into the file named
 // firebaseConfig.json
-import firebaseConfig from "./firebaseConfig.json";
+// import firebaseConfig from "./firebaseConfig.json";
 
 Vue.config.productionTip = false;
 
 Vue.use(VueMaterial);
 
-firebase.initializeApp(firebaseConfig);
+// firebase.initializeApp(firebaseConfig);
 
 new Vue({
   router,
