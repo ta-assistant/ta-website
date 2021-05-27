@@ -7,8 +7,11 @@
         </md-card-header>
 
         <md-card-content>
-          <section id="firebaseui-auth-container">
-          </section>
+          <section id="firebaseui-auth-container"></section>
+          // TODO: Remove these code after the export from template is completed
+          <md-button class="md-raised md-primary" v-on:click="forwardToCourses">
+            Click to SignIn</md-button
+          >
         </md-card-content>
       </md-card>
     </div>
@@ -16,28 +19,31 @@
 </template>
 
 <script>
+import Vue from "vue";
 import firebase from "firebase";
-import * as fbui from "firebaseui";
+import * as firebaseUi from "firebaseui";
 import "firebaseui/dist/firebaseui.css";
 
 export default Vue.extend({
-  test: () => {
-    let auth = firebase.auth();
-    console.log(auth.currentUser.toJSON());
+  methods: {
+    // TODO: Remove these code after the export from template is completed
+    forwardToCourses() {
+      this.$router.push({ path: "/course" });
+    },
   },
-  // mounted() {
-  //   let googleSigninProvider = new firebase.auth.GoogleAuthProvider();
-  //   googleSigninProvider.addScope(
-  //     "https://www.googleapis.com/auth/classroom.courses.readonly"
-  //   );
-
-  //   const uiConfig = {
-  //     signInSuccessUrl: "/course",
-  //     signInOptions: [googleSigninProvider.providerId],
-  //   };
-  //   const ui = new fbui.auth.AuthUI(firebase.auth());
-  //   ui.start("#firebaseui-auth-container", uiConfig);
-  // },
+  mounted() {
+    // TODO: Uncomment these code after the export from template is completed
+    // let googleSigninProvider = new firebase.auth.GoogleAuthProvider();
+    // googleSigninProvider.addScope(
+    //   "https://www.googleapis.com/auth/classroom.courses.readonly"
+    // );
+    // const uiConfig = {
+    //   signInSuccessUrl: "/course",
+    //   signInOptions: [googleSigninProvider.providerId],
+    // };
+    // const ui = new firebaseUi.auth.AuthUI(firebase.auth());
+    // ui.start("#firebaseui-auth-container", uiConfig);
+  },
 });
 </script>
 
