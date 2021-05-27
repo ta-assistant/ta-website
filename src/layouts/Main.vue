@@ -1,29 +1,62 @@
 <template>
-    <div class="main">
-        <b-navbar togglable="lg">
-            <b-navbar-brand href="#">Classes</b-navbar-brand>
-            <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-            <b-collapse id="nav-collapse">
-                <b-navbar-nav class="ml-auto">
-                    <b-nav-form>
-                        <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-                        <b-button size="sm" class="my-2 my-sm-0" type="submit">Find work</b-button>
-                    </b-nav-form>
-                </b-navbar-nav>
-            </b-collapse>
-        </b-navbar>
-    </div>
+  <div class="page-container">
+    <md-app class="full-height">
+        <md-app-toolbar class="md-primary">
+        <md-button class="md-icon-button" @click="menuVisible = !menuVisible">
+          <md-icon>menu</md-icon>
+        </md-button>
+        <span class="md-title">TA Website</span>
+        </md-app-toolbar>
+      <md-app-drawer :md-active.sync="menuVisible">
+        <md-toolbar class="md-transparent" md-elevation="0">Navigation</md-toolbar>
+
+        <md-list>
+          <md-list-item>
+            <md-icon>move_to_inbox</md-icon>
+            <span class="md-list-item-text">Inbox</span>
+          </md-list-item>
+
+          <md-list-item>
+            <md-icon>send</md-icon>
+            <span class="md-list-item-text">Sent Mail</span>
+          </md-list-item>
+
+          <md-list-item>
+            <md-icon>delete</md-icon>
+            <span class="md-list-item-text">Trash</span>
+          </md-list-item>
+
+          <md-list-item>
+            <md-icon>error</md-icon>
+            <span class="md-list-item-text">Spam</span>
+          </md-list-item>
+        </md-list>
+      </md-app-drawer>
+
+        <md-app-content>
+            <slot></slot>
+        </md-app-content>
+    </md-app>
+  </div>
 </template>
 
 <script>
 export default {
-    name: "Main"
+    name: "Main",
+    data() {
+        return {
+            menuVisible: false
+        }
+    }
 }
 </script>
 
 <style>
-.main {
+.page-container {
     height: 100%;
     width: 100%;
+}
+.full-height {
+    height: 100%;
 }
 </style>

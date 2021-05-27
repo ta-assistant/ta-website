@@ -1,5 +1,14 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
-  </div>
+  <Main>
+    <p>Abolut</p>
+  </Main>
 </template>
+
+<script>
+import Main from "../layouts/Main"
+export default {
+  components: {
+    Main,
+  },
+}
+</script>
