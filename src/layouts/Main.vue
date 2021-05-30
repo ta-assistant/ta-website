@@ -12,23 +12,18 @@
 
         <md-list>
           <md-list-item>
-            <md-icon>move_to_inbox</md-icon>
-            <span class="md-list-item-text">Inbox</span>
+            <md-icon>school</md-icon>
+            <span class="md-list-item-text">Course</span>
           </md-list-item>
 
           <md-list-item>
-            <md-icon>send</md-icon>
-            <span class="md-list-item-text">Sent Mail</span>
+            <md-icon>account_circle</md-icon>
+            <span class="md-list-item-text">Profile</span>
           </md-list-item>
 
           <md-list-item>
-            <md-icon>delete</md-icon>
-            <span class="md-list-item-text">Trash</span>
-          </md-list-item>
-
-          <md-list-item>
-            <md-icon>error</md-icon>
-            <span class="md-list-item-text">Spam</span>
+            <md-icon>settings</md-icon>
+            <span class="md-list-item-text">Setting</span>
           </md-list-item>
         </md-list>
       </md-app-drawer>
