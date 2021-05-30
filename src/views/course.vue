@@ -1,13 +1,17 @@
 <template>
-  <div>
+  <layout>
     <p>Console Page (Course List)</p>
-  </div>
+  </layout>
 </template>
 
 <script>
 import firebase from "firebase";
+import Layout from "../layouts/Main.vue"
 
 export default {
+  components: {
+    Layout
+  }
   // mounted() {
   //   firebase.auth().onauthstatechanged((user) => {
   //     if (!user) {
