@@ -1,16 +1,39 @@
 <template>
   <layout>
-    <p>Console Page (Course List)</p>
+    <p class="md-title">Console Page (Course List)</p>
+    <div class="md-layout">
+      <div v-for="course in courses" :key="course.id" class="md-layout-item">
+        <course-card  :course="course" />
+      </div>
+    </div>
   </layout>
 </template>
 
 <script>
 import firebase from "firebase";
 import Layout from "../layouts/Main.vue"
+import CourseCard from '@/components/CourseCard.vue';
 
 export default {
   components: {
-    Layout
+    Layout,
+    CourseCard
+  },
+  data() {
+    return {
+      courses: [
+        {
+          name: "Computer Programming X",
+          teacher: "Jotaro Kujo",
+          id: "23edkrsetdk"
+        },
+        {
+          name: "Discrete Math III",
+          teacher: "Steve and Alex",
+          id: "23890ywkt"
+        }
+      ]
+    }
   }
   // mounted() {
   //   firebase.auth().onauthstatechanged((user) => {
@@ -23,3 +46,11 @@ export default {
   // },
 };
 </script>
+
+<style lang="postcss">
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 2rem;
+}
+</style>
