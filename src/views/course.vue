@@ -57,7 +57,9 @@ export default {
   grid-gap: 2rem;
 }
 .menu {
-  padding: 1rem;
   text-align: left;
+}
+.menu > * {
+  margin-left: 0;
 }
 </style>
