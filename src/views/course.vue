@@ -2,7 +2,7 @@
   <layout>
     <p class="md-title">Console Page (Course List)</p>
     <div class="menu">
-      <md-button class="md-primary md-raised"><md-icon>add</md-icon>New Class</md-button>
+      <md-button class="ml-0 md-primary md-raised"><md-icon>add</md-icon>New Class</md-button>
     </div>
     <div class="md-layout">
       <div v-for="course in courses" :key="course.id" class="md-layout-item">
@@ -59,7 +59,7 @@ export default {
 .menu {
   text-align: left;
 }
-.menu > * {
+.ml-0 {
   margin-left: 0;
 }
 </style>
