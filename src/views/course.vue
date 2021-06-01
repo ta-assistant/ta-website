@@ -1,6 +1,9 @@
 <template>
   <layout>
     <p class="md-title">Console Page (Course List)</p>
+    <div class="menu">
+      <md-button class="md-primary md-raised"><md-icon>add</md-icon>New Class</md-button>
+    </div>
     <div class="md-layout">
       <div v-for="course in courses" :key="course.id" class="md-layout-item">
         <course-card  :course="course" />
@@ -52,5 +55,9 @@ export default {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 2rem;
+}
+.menu {
+  padding: 1rem;
+  text-align: left;
 }
 </style>
