@@ -24,7 +24,7 @@ const routes: Array<RouteConfig> = [
     component: course,
   },
   {
-    path: "/course/:detail",
+    path: "/course/:id",
     name: "course_detail",
     component: CourseDetail,
   },
