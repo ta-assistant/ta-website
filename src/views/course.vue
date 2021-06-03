@@ -53,7 +53,6 @@ export default {
       console.log(user.toJSON());
     });
   },
-  master,
 };
 </script>
 
