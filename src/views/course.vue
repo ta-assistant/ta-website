@@ -5,7 +5,7 @@
       <md-button class="ml-0 md-primary md-raised"><md-icon>add</md-icon>New Class</md-button>
     </div>
     <div class="md-layout">
-      <div v-for="course in courses" :key="course.id" class="md-layout-item">
+      <div v-for="course in courses" :key="course.id" class="md-layout-item md-medium-size-100 md-large-size-50 mb-4">
         <course-card  :course="course" />
       </div>
     </div>
@@ -34,6 +34,11 @@ export default {
           name: "Discrete Math III",
           teacher: "Steve and Alex",
           id: "23890ywkt"
+        },
+        {
+          name: "Finnish Language for Communication",
+          teacher: "Mending Guy",
+          id: "reistirskti"
         }
       ]
     }
@@ -58,8 +63,12 @@ export default {
 }
 .menu {
   text-align: left;
+  padding: .5rem;
 }
 .ml-0 {
   margin-left: 0;
+}
+.mb-4 {
+  margin-bottom: 2rem;
 }
 </style>
