@@ -3,7 +3,7 @@
     <p class="md-title">Console Page (Course List)</p>
     <div class="md-layout">
       <div v-for="course in courses" :key="course.id" class="md-layout-item">
-        <course-card  :course="course" />
+        <course-card :course="course" />
       </div>
     </div>
   </layout>
@@ -11,13 +11,13 @@
 
 <script>
 import firebase from "firebase";
-import Layout from "../layouts/Main.vue"
-import CourseCard from '@/components/CourseCard.vue';
+import Layout from "../layouts/Main.vue";
+import CourseCard from "@/components/CourseCard.vue";
 
 export default {
   components: {
     Layout,
-    CourseCard
+    CourseCard,
   },
   data() {
     return {
@@ -25,25 +25,25 @@ export default {
         {
           name: "Computer Programming X",
           teacher: "Jotaro Kujo",
-          id: "23edkrsetdk"
+          id: "23edkrsetdk",
         },
         {
           name: "Discrete Math III",
           teacher: "Steve and Alex",
-          id: "23890ywkt"
-        }
-      ]
-    }
-  }
-  // mounted() {
-  //   firebase.auth().onauthstatechanged((user) => {
-  //     if (!user) {
-  //       console.log("not signed in");
-  //       this.$router.push({ path: "/signin" });
-  //     }
-  //     console.log(user.tojson());
-  //   });
-  // },
+          id: "23890ywkt",
+        },
+      ],
+    };
+  },
+  mounted() {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        console.log("not signed in");
+        this.$router.push({ path: "/signin" });
+      }
+      console.log(user.toJSON());
+    });
+  },
 };
 </script>
 
