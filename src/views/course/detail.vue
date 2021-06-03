@@ -13,13 +13,7 @@
         </md-button>
     </div>
         <div class="work-list">
-            <div class="work md-elevation-3 md-layout">
-                <p class="md-layout-item md-small-size-30">Exercise 1</p>
-                <md-progress-bar class="md-layout-item md-small-size-40" :md-value="40"></md-progress-bar>
-                <div class="md-layout-item md-small-size-30">
-                    <md-button class="md-primary md-raised">View Work</md-button>
-                </div>
-            </div>
+            <work-progress v-for="work in works" :key="work.link" :work="work" />
         </div>
     </div>
 </layout>
@@ -28,9 +22,27 @@
 <script lang="ts">
 import Vue from 'vue'
 import Layout from "../../layouts/Main.vue"
+import WorkProgress, {Work} from "../../components/WorkProgress.vue"
 export default Vue.extend({
     components: {
-        Layout
+        Layout,
+        WorkProgress
+    },
+    data() {
+        return {
+            works: [
+                {
+                    name: "Exercise I",
+                    progress: 20,
+                    link: "4802"
+                },
+                {
+                    name: "Extra Homework 88",
+                    progress: "40",
+                    link: "2389lrstikdi"
+                }
+            ]
+        }
     }
 })
 </script>
@@ -53,8 +65,8 @@ export default Vue.extend({
 .work-list {
     padding-top: 1rem;
 }
-.work {
-    padding: 1rem;
+.work-list > * {
+    margin-bottom: 1rem;
 }
 .md-progress-bar {
     align-self: center;
