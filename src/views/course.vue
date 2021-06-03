@@ -1,8 +1,17 @@
 <template>
   <layout>
     <p class="md-title">Console Page (Course List)</p>
+    <div class="menu">
+      <md-button class="ml-0 md-primary md-raised"
+        ><md-icon>add</md-icon>New Class</md-button
+      >
+    </div>
     <div class="md-layout">
-      <div v-for="course in courses" :key="course.id" class="md-layout-item">
+      <div
+        v-for="course in courses"
+        :key="course.id"
+        class="md-layout-item md-medium-size-100 md-large-size-50 mb-4"
+      >
         <course-card :course="course" />
       </div>
     </div>
@@ -44,6 +53,7 @@ export default {
       console.log(user.toJSON());
     });
   },
+  master,
 };
 </script>
 
@@ -53,4 +63,15 @@ export default {
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 2rem;
 }
+.menu {
+  text-align: left;
+  padding: 0.5rem;
+}
+.ml-0 {
+  margin-left: 0;
+}
+.mb-4 {
+  margin-bottom: 2rem;
+}
 </style>
+>>>>>>> master
