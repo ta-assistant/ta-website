@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import SignIn from "../views/SignIn.vue";
 import course from "../views/course.vue";
 import CourseDetail from "../views/course/detail.vue";
+import WorkDetail from "../views/course/work.vue";
 
 Vue.use(VueRouter);
 
@@ -27,6 +28,11 @@ const routes: Array<RouteConfig> = [
     path: "/course/:id",
     name: "course_detail",
     component: CourseDetail,
+  },
+  {
+    path: "/work/:id",
+    name: "exercise",
+    component: WorkDetail,
   },
   {
     path: "/about",
