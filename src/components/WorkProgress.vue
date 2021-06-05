@@ -27,9 +27,10 @@ export default Vue.extend({
 })
 </script>
 
-<style>
+<style scoped>
 .work {
     padding: 1rem;
+    text-align: center;
 }
 .md-progress-bar {
     align-self: center;
