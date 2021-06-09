@@ -53,7 +53,7 @@ export default Vue.extend({
 }
 .menu {
     display: flex;
-    padding: 0;
+    padding: .55rem;
 }
 .menu > * {
     margin-right: .5rem;

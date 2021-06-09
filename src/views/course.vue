@@ -63,7 +63,7 @@ export default {
 }
 .menu {
   text-align: left;
-  padding: .5rem;
+  padding: .55rem;
 }
 .ml-0 {
   margin-left: 0;

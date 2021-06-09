@@ -35,4 +35,7 @@ export default Vue.extend({
 .underline {
     text-decoration: underline;
 }
+.md-card {
+    text-align: center;
+}
 </style>
