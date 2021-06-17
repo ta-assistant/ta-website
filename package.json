@@ -12,6 +12,9 @@
     "firebase": "^8.6.2",
     "firebaseui": "^4.8.0",
     "googleapis": "39",
+    "highlight.js": "^11.0.1",
+    "markdown-it": "^12.0.6",
+    "markdown-it-vue": "^1.1.6",
     "vue": "^2.6.12",
     "vue-class-component": "^7.2.6",
     "vue-material": "^1.0.0-beta-15",
@@ -19,6 +22,8 @@
     "vue-router": "^3.5.1"
   },
   "devDependencies": {
+    "@types/highlight.js": "^10.1.0",
+    "@types/markdown-it": "^12.0.2",
     "@typescript-eslint/eslint-plugin": "^4.24.0",
     "@typescript-eslint/parser": "^4.24.0",
     "@vue/cli-plugin-babel": "~4.5.13",

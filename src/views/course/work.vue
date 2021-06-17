@@ -41,7 +41,7 @@
         </form>
         <h1 class="md-title">Comments</h1>
         <div class="comments">
-
+            <comment/>
         </div>
     </div>
 </layout>
@@ -50,10 +50,12 @@
 <script lang="ts">
 import Vue from 'vue'
 import Layout from "../../layouts/Main.vue"
+import Comment from "../../components/Comment.vue"
 export default Vue.extend({
     name: "WorkDetail",
     components: {
-        Layout
+        Layout,
+        Comment,
     }
 })
 </script>
