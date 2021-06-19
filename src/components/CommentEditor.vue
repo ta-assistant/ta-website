@@ -8,10 +8,10 @@
 		  </md-field>
 	  </md-card-content>
 	  <md-card-content v-else>
-		  {{ value }}
+		  <div v-html="renderedText"></div>
 	  </md-card-content>
 	  <md-card-actions>
-		  <md-button class="md-primary">Preview</md-button>
+		  <md-button @click="statusButtonAction" class="md-primary">{{statusButtonText}}</md-button>
 		  <md-button class="md-primary md-raised">Comment</md-button>
 	  </md-card-actions>
   </md-card>
@@ -19,6 +19,7 @@
 
 <script lang="ts">
 import Vue, { PropType } from 'vue'
+import markdown from "../utils/markdown"
 
 type EditorStatus = 'edit' | 'preview'
 
@@ -35,6 +36,23 @@ export default Vue.extend({
 		return {
 			text: "",
 			status: 'edit' as EditorStatus,
+		}
+	},
+	computed: {
+		statusButtonText() {
+			return this.status === 'edit' ? 'Preview' : 'Edit'
+		},
+		renderedText() {
+			return markdown.render(this.value)
+		}
+	},
+	methods: {
+		statusButtonAction() {
+			if (this.status === 'edit') {
+				this.status = 'preview'
+			} else {
+				this.status = 'edit'
+			}
 		}
 	}
 })
