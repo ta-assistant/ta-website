@@ -41,6 +41,7 @@
         </form>
         <h1 class="md-title">Comments</h1>
         <div class="comments">
+            <comment-editor v-model="currentComment"/>
             <comment/>
         </div>
     </div>
@@ -51,11 +52,18 @@
 import Vue from 'vue'
 import Layout from "../../layouts/Main.vue"
 import Comment from "../../components/Comment.vue"
+import CommentEditor from "../../components/CommentEditor.vue"
 export default Vue.extend({
     name: "WorkDetail",
     components: {
         Layout,
         Comment,
+        CommentEditor
+    },
+    data: () => {
+        return {
+            currentComment: ""
+        }
     }
 })
 </script>
