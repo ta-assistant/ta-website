@@ -36,8 +36,13 @@ export default Vue.extend({
       "https://www.googleapis.com/auth/classroom.courses.readonly"
     );
     const uiConfig = {
-      signInSuccessUrl: "/course",
+      signInSuccessUrl: "",
       signInOptions: [googleSigninProvider.providerId],
+      callbacks: {
+        signInSuccessWithAuthResult: function (authResult, redirectUrl) {
+          console.log(authResult);
+        },
+      },
     };
     const ui = new firebaseUi.auth.AuthUI(firebase.auth());
     ui.start("#firebaseui-auth-container", uiConfig);
