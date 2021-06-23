@@ -8,7 +8,7 @@
             <img src="assets/map.png" alt="demo here">
         </md-card-media>
         <md-card-actions>
-            <md-button class="md-primary md-raised">View work</md-button>
+            <md-button :to="`/course/${course.id}`" class="md-primary md-raised">View work</md-button>
         </md-card-actions>
     </md-card>
 </template>
@@ -34,5 +34,8 @@ export default Vue.extend({
 <style scoped>
 .underline {
     text-decoration: underline;
+}
+.md-card {
+    text-align: center;
 }
 </style>

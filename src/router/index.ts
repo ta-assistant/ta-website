@@ -4,6 +4,8 @@ import Home from "../views/Home.vue";
 import SignIn from "../views/SignIn.vue";
 import course from "../views/course.vue";
 import CourseDetail from "../views/course/detail.vue";
+import WorkDetail from "../views/course/work.vue";
+import WorkSubmission from "../views/course/submission.vue";
 
 Vue.use(VueRouter);
 
@@ -24,9 +26,19 @@ const routes: Array<RouteConfig> = [
     component: course,
   },
   {
-    path: "/course/:detail",
+    path: "/course/:id",
     name: "course_detail",
     component: CourseDetail,
+  },
+  {
+    path: "/work/:id",
+    name: "WorkSubmission",
+    component: WorkSubmission,
+  },
+  {
+    path: "/work/:id/:studentId",
+    name: "exercise",
+    component: WorkDetail,
   },
   {
     path: "/about",

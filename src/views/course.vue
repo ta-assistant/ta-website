@@ -12,6 +12,7 @@
         :key="course.id"
         class="md-layout-item md-medium-size-100 md-large-size-50 mb-4"
       >
+      <div v-for="course in courses" :key="course.id" class="md-layout-item md-medium-size-100 md-large-size-50 mb-4">
         <course-card :course="course" />
       </div>
     </div>
@@ -64,7 +65,11 @@ export default {
 }
 .menu {
   text-align: left;
+<<<<<<< HEAD
   padding: 0.5rem;
+=======
+  padding: .55rem;
+>>>>>>> master
 }
 .ml-0 {
   margin-left: 0;
