@@ -20,40 +20,76 @@
 <script lang="ts">
 import Vue, { PropType } from 'vue'
 import markdown from "../utils/markdown"
+import Component from "vue-class-component"
+import { Prop } from "vue-property-decorator"
 
 type EditorStatus = 'edit' | 'preview'
 
-export default Vue.extend({
-	name: "CommentEditor",
+@Component({
 	props: {
 		value: {
 			type: String as PropType<string>,
 			required: true,
 			default: ""
 		}
-	},
-	data: () => {
-		return {
-			text: "",
-			status: 'edit' as EditorStatus,
-		}
-	},
-	computed: {
-		statusButtonText() {
-			return this.status === 'edit' ? 'Preview' : 'Edit'
-		},
-		renderedText() {
-			return markdown.render(this.value)
-		}
-	},
-	methods: {
-		statusButtonAction() {
-			if (this.status === 'edit') {
-				this.status = 'preview'
-			} else {
-				this.status = 'edit'
-			}
-		}
 	}
 })
+export default class CommentEditor extends Vue{
+	@Prop({
+		type: String as PropType<string>,
+		required: true,
+		default: ""
+	}) 
+	value!: string
+	text = ""
+	status = "edit" as EditorStatus
+	get statusButtonText() {
+		return this.status === 'edit' ? 'Preview' : 'Edit'
+	}
+	get renderedText() {
+		return markdown.render(this.value)
+	}
+	statusButtonAction()  {
+		if (this.status === 'edit') {
+			this.status = 'preview'
+		} else {
+			this.status = 'edit'
+		}
+	}
+}
+
+
+// export default Vue.extend({
+// 	name: "CommentEditor",
+// 	props: {
+// 		value: {
+// 			type: String as PropType<string>,
+// 			required: true,
+// 			default: ""
+// 		}
+// 	},
+// 	data: (): {text: string, status: EditorStatus} => {
+// 		return {
+// 			text: "",
+// 			status: 'edit' as EditorStatus,
+// 		}
+// 	},
+// 	computed: {
+// 		statusButtonText() {
+// 			return this.status === 'edit' ? 'Preview' : 'Edit'
+// 		},
+// 		renderedText() {
+// 			return markdown.render(this.value)
+// 		}
+// 	},
+// 	methods: {
+// 		statusButtonAction()  {
+// 			if (this.status === 'edit') {
+// 				this.status = 'preview'
+// 			} else {
+// 				this.status = 'edit'
+// 			}
+// 		}
+// 	}
+// })
 </script>
