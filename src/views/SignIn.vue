@@ -31,20 +31,30 @@ export default Vue.extend({
     },
   },
   mounted() {
-    let googleSigninProvider = new firebase.auth.GoogleAuthProvider();
-    googleSigninProvider.addScope(
-      "https://www.googleapis.com/auth/classroom.courses.readonly"
-    );
+    const firebaseAuth = firebase.auth();
     const uiConfig = {
-      signInSuccessUrl: "",
-      signInOptions: [googleSigninProvider.providerId],
+      signInSuccessUrl: "/course",
+      signInOptions: [
+        {
+          provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+          scopes: [
+            "https://www.googleapis.com/auth/classroom.courses.readonly",
+          ],
+          customParameters: {
+            prompt: "select_account",
+          },
+        },
+      ],
       callbacks: {
-        signInSuccessWithAuthResult: function (authResult, redirectUrl) {
+        signInSuccessWithAuthResult: (authResult, redirectUrl) => {
+          this.$session.start();
+          this.$session.set("authCredential", authResult);
           console.log(authResult);
+          return true;
         },
       },
     };
-    const ui = new firebaseUi.auth.AuthUI(firebase.auth());
+    const ui = new firebaseUi.auth.AuthUI(firebaseAuth);
     ui.start("#firebaseui-auth-container", uiConfig);
   },
 });

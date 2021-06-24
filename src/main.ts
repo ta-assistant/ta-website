@@ -6,6 +6,7 @@ import VueMaterial from "vue-material";
 import firebase from "firebase";
 import "vue-material/dist/vue-material.min.css";
 import "vue-material/dist/theme/default.css";
+import VueSession from "vue-session";
 
 // Export the firebaseConfig From Firebase Console by creating a new app
 // and copy the Firebase Web app configuration and paste it into the file named
@@ -16,6 +17,7 @@ import firebaseConfig from "./firebaseConfig.json";
 Vue.config.productionTip = false;
 
 Vue.use(VueMaterial);
+Vue.use(VueSession);
 
 // TODO: Uncomment these code after the export from template is completed
 firebase.initializeApp(firebaseConfig);
