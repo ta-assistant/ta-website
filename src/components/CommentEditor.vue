@@ -22,6 +22,7 @@ import Vue, { PropType } from 'vue'
 import markdown from "../utils/markdown"
 import Component from "vue-class-component"
 import { Prop } from "vue-property-decorator"
+import "highlight.js/styles/atom-one-dark.css";
 
 type EditorStatus = 'edit' | 'preview'
 
@@ -59,37 +60,4 @@ export default class CommentEditor extends Vue{
 }
 
 
-// export default Vue.extend({
-// 	name: "CommentEditor",
-// 	props: {
-// 		value: {
-// 			type: String as PropType<string>,
-// 			required: true,
-// 			default: ""
-// 		}
-// 	},
-// 	data: (): {text: string, status: EditorStatus} => {
-// 		return {
-// 			text: "",
-// 			status: 'edit' as EditorStatus,
-// 		}
-// 	},
-// 	computed: {
-// 		statusButtonText() {
-// 			return this.status === 'edit' ? 'Preview' : 'Edit'
-// 		},
-// 		renderedText() {
-// 			return markdown.render(this.value)
-// 		}
-// 	},
-// 	methods: {
-// 		statusButtonAction()  {
-// 			if (this.status === 'edit') {
-// 				this.status = 'preview'
-// 			} else {
-// 				this.status = 'edit'
-// 			}
-// 		}
-// 	}
-// })
 </script>
