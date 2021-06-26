@@ -87,9 +87,11 @@ export default {
         this.$router.push({ path: "/signin" });
         return;
       }
-      if (typeof this.credentialCheckCallback === "function") {
-        this.credentialCheckCallback(user, this.$refs.dialogBox);
+      if (typeof this.credentialCheckCallback !== "function") {
+        this.$refs.dialogBox.dismissDialogBox();
+        return;
       }
+      this.credentialCheckCallback(user, this.$refs.dialogBox);
     });
   },
 };
