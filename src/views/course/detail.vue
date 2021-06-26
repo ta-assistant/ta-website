@@ -1,7 +1,7 @@
 <template>
-  <layout>
+  <layout :credentialCheckCallback="callbackHandler">
     <div class="container">
-      <h1 class="md-title text-left">Computer Programming X</h1>
+      <h1 class="md-title text-left">{{ courseName }}</h1>
       <div class="menu">
         <md-button class="md-primary md-raised">
           <md-icon>add</md-icon>
@@ -33,7 +33,8 @@ import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
 import WorkProgress, { Work } from "../../components/WorkProgress.vue";
 import firebase from "firebase";
-
+import axios from "axios";
+import { DialogBoxActionObject } from "@/components/DialogBox.vue";
 export default Vue.extend({
   components: {
     Layout,
@@ -41,22 +42,146 @@ export default Vue.extend({
   },
   data() {
     return {
-      works: [
-        // {
-        //   name: "Exercise I",
-        //   progress: 20,
-        //   link: "4802",
-        // },
-        // {
-        //   name: "Extra Homework 88",
-        //   progress: "40",
-        //   link: "2389lrstikdi",
-        // },
-      ],
+      courseName: "Loading . . .",
+      dialogBox: () => {},
+      works: [],
     };
   },
 
-  methods: {},
+  methods: {
+    callbackHandler(
+      firebaseUser: firebase.User,
+      authCredential: any,
+      dialogBox: any
+    ) {
+      const firestore = firebase.firestore();
+      this.$set(this, "dialogBox", dialogBox);
+      const courseId: string = this.$route.params.id;
+      return this.getCourseName(courseId, authCredential.credential)
+        .then((res) => {
+          console.log(res);
+          this.courseName = res.data.name;
+          return this.getCourseWorks(courseId, authCredential.credential);
+        })
+        .then((res) => {
+          return this.getWorksFromDatabase(res, firestore);
+        })
+        .then(this.setDataToDisplay)
+        .catch(this.promiseErrorHandler);
+    },
+    getCourseName(courseId: string, credential: any) {
+      return axios({
+        method: "GET",
+        url: "https://classroom.googleapis.com/v1/courses/" + courseId,
+        headers: {
+          Authorization: "Bearer " + credential.oauthAccessToken,
+        },
+      });
+    },
+    getCourseWorks(courseId: string, credential: any) {
+      return axios({
+        method: "GET",
+        url:
+          "https://classroom.googleapis.com/v1/courses/" +
+          courseId +
+          "/courseWork",
+        headers: {
+          Authorization: "Bearer " + credential.oauthAccessToken,
+        },
+      });
+    },
+    getWorksFromDatabase(res: any, firestore: firebase.firestore.Firestore) {
+      console.log(res);
+      const promises: Array<Promise<any>> = [];
+      promises.push(res.data.courseWork);
+      res.data.courseWork.forEach((courseWork: any) => {
+        promises.push(firestore.collection("Works").doc(courseWork.id).get());
+      });
+      return Promise.all(promises);
+    },
+    setDataToDisplay(promisesResult: Array<any>) {
+      const courseWork: Array<any> = promisesResult.shift();
+      const dataToDisplay: Array<Work> = [];
+      promisesResult.forEach(
+        (doc: firebase.firestore.DocumentSnapshot, index: number) => {
+          if (doc.exists) {
+            const work = courseWork[index];
+            dataToDisplay.push({
+              name: work.title,
+              progress: 0,
+              link: work.id,
+              classroomUrl: work.alternateLink,
+            });
+          }
+        }
+      );
+      this.$set(this, "works", dataToDisplay);
+      this.$data.dialogBox.dismissDialogBox();
+    },
+    promiseErrorHandler(e: any) {
+      console.log(e);
+      let message = "";
+      let action: Array<DialogBoxActionObject> = [];
+      if (e.message === "Request failed with status code 401") {
+        // Session timeout.
+        message =
+          "Failed to send request to Classroom API. Please sign-in again";
+        action = [
+          {
+            buttonContent: {
+              value: "Sign-out",
+              isHTML: false,
+            },
+            buttonClass: "md-primary",
+            onClick: () => {
+              this.$data.dialogBox.dismissDialogBox();
+              this.$router.push({
+                path: "/signIn",
+              });
+            },
+          },
+        ];
+      } else {
+        action = [
+          {
+            buttonContent: {
+              value: "Back to courses",
+              isHTML: false,
+            },
+            buttonClass: "md-primary",
+            onClick: () => {
+              this.$data.dialogBox.dismissDialogBox();
+              this.$router.push({
+                path: "/course",
+              });
+            },
+          },
+        ];
+        if (e.message === "Request failed with status code 403") {
+          // User isn't an teacher or have no permission;
+          message =
+            "You don't have permission to access current course's works on Google Classroom.";
+        } else {
+          message =
+            "An error occurred while getting the data from ClassroomAPI and Database";
+        }
+      }
+      this.$data.dialogBox.dismissDialogBox();
+      this.$data.dialogBox.showDialogBox({
+        dialogBoxContent: {
+          title: {
+            value: "Error",
+            isHTML: false,
+          },
+          content: {
+            value: message,
+            isHTML: false,
+          },
+        },
+        dialogBoxActions: action,
+      });
+    },
+  },
 });
 </script>
 
