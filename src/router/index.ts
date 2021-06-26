@@ -26,17 +26,17 @@ const routes: Array<RouteConfig> = [
     component: course,
   },
   {
-    path: "/course/:id",
+    path: "/course/:courseId",
     name: "course_detail",
     component: CourseDetail,
   },
   {
-    path: "/work/:id",
+    path: "/course/:courseId/work/:workId",
     name: "WorkSubmission",
     component: WorkSubmission,
   },
   {
-    path: "/work/:id/:studentId",
+    path: "/course/:courseId/work/:workId/:studentId",
     name: "exercise",
     component: WorkDetail,
   },

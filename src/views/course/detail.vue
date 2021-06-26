@@ -56,7 +56,7 @@ export default Vue.extend({
     ) {
       const firestore = firebase.firestore();
       this.$set(this, "dialogBox", dialogBox);
-      const courseId: string = this.$route.params.id;
+      const courseId: string = this.$route.params.courseId;
       return this.getCourseName(courseId, authCredential.credential)
         .then((res) => {
           console.log(res);
