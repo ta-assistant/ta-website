@@ -1,5 +1,5 @@
 <template>
-  <layout>
+  <layout :credentialCheckCallback="callbackHandler">
     <p class="md-title">Console Page (Course List)</p>
     <div class="menu">
       <md-button class="ml-0 md-primary md-raised"
@@ -43,23 +43,8 @@ export default {
       courses: [],
     };
   },
-  mounted() {
-    firebase.auth().onAuthStateChanged((user) => {
-      if (
-        !user ||
-        !this.$session.exists() ||
-        !this.$session.has("authCredential")
-      ) {
-        console.log("User not signed In");
-        this.$router.push({ path: "/signin" });
-      }
-      console.log(user.uid);
-      this.getCourses(user);
-    });
-    return true;
-  },
   methods: {
-    getCourses(firebaseUser) {
+    async callbackHandler(firebaseUser, dialogBox) {
       const firestore = firebase.firestore();
       const authCredential = this.$session.get("authCredential");
       const courseList = [];
@@ -126,9 +111,9 @@ export default {
               courseCount = 0;
             }
           });
+          dialogBox.dismissDialogBox();
         })
         .catch((e) => {
-          console.log("Error");
           console.log(e);
           return false;
         });

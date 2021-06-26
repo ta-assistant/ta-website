@@ -39,6 +39,7 @@ export default Vue.extend({
           provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
           scopes: [
             "https://www.googleapis.com/auth/classroom.courses.readonly",
+            "https://www.googleapis.com/auth/classroom.coursework.students",
           ],
           customParameters: {
             prompt: "select_account",
