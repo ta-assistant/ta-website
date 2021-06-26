@@ -45,9 +45,8 @@ export default {
     };
   },
   methods: {
-    callbackHandler(firebaseUser, dialogBox) {
+    callbackHandler(firebaseUser, authCredential, dialogBox) {
       const firestore = firebase.firestore();
-      const authCredential = this.$session.get("authCredential");
       this.$set(this, "dialogBox", dialogBox);
       return this.getCoursesFromClassroomApi(authCredential.credential)
         .then((res) => {
@@ -70,6 +69,7 @@ export default {
       });
     },
     generatePermissionCheckPromises(res, firestore, firebaseUser) {
+      console.log(res.data);
       const responseCourses = res.data.courses;
       const courseList = [];
       console.log(res);

@@ -91,7 +91,8 @@ export default {
         this.$refs.dialogBox.dismissDialogBox();
         return;
       }
-      this.credentialCheckCallback(user, this.$refs.dialogBox);
+      const credential = this.$session.get("authCredential");
+      this.credentialCheckCallback(user, credential, this.$refs.dialogBox);
     });
   },
 };
