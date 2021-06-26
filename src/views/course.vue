@@ -41,82 +41,134 @@ export default {
   data() {
     return {
       courses: [],
+      dialogBox: {},
     };
   },
   methods: {
-    async callbackHandler(firebaseUser, dialogBox) {
+    callbackHandler(firebaseUser, dialogBox) {
       const firestore = firebase.firestore();
       const authCredential = this.$session.get("authCredential");
-      const courseList = [];
+      this.$set(this, "dialogBox", dialogBox);
+      return this.getCoursesFromClassroomApi(authCredential.credential)
+        .then((res) => {
+          return this.generatePermissionCheckPromises(
+            res,
+            firestore,
+            firebaseUser
+          );
+        })
+        .then(this.setCourseData)
+        .catch(this.promiseErrorHandler);
+    },
+    getCoursesFromClassroomApi(credential) {
       return axios({
         method: "GET",
         url: "https://classroom.googleapis.com/v1/courses",
         headers: {
-          Authorization: "Bearer " + authCredential.credential.oauthAccessToken,
+          Authorization: "Bearer " + credential.oauthAccessToken,
         },
-      })
-        .then((res) => {
-          const responseCourses = res.data.courses;
-          console.log(res);
-          for (var courseIndex in responseCourses) {
-            const course = responseCourses[courseIndex];
-            if (course.courseState === "ACTIVE") {
-              courseList.push(course);
-            }
-          }
+      });
+    },
+    generatePermissionCheckPromises(res, firestore, firebaseUser) {
+      const responseCourses = res.data.courses;
+      const courseList = [];
+      console.log(res);
+      for (var courseIndex in responseCourses) {
+        const course = responseCourses[courseIndex];
+        if (course.courseState === "ACTIVE") {
+          courseList.push(course);
+        }
+      }
 
-          const permissionCheckPromises = [];
-          for (var courseIndex in courseList) {
-            const course = courseList[courseIndex];
-            permissionCheckPromises.push(
-              firestore
-                .collection("Classrooms")
-                .doc(course.id.toString())
-                .collection("teachers")
-                .doc(firebaseUser.uid)
-                .get()
-            );
-            permissionCheckPromises.push(
-              firestore
-                .collection("Classrooms")
-                .doc(course.id)
-                .collection("students")
-                .doc(firebaseUser.uid)
-                .get()
-            );
+      const permissionCheckPromises = [];
+      permissionCheckPromises.push(courseList);
+      for (var courseIndex in courseList) {
+        const course = courseList[courseIndex];
+        permissionCheckPromises.push(
+          firestore
+            .collection("Classrooms")
+            .doc(course.id.toString())
+            .collection("teachers")
+            .doc(firebaseUser.uid)
+            .get()
+        );
+        permissionCheckPromises.push(
+          firestore
+            .collection("Classrooms")
+            .doc(course.id)
+            .collection("students")
+            .doc(firebaseUser.uid)
+            .get()
+        );
+      }
+      return Promise.all(permissionCheckPromises);
+    },
+    setCourseData(promisesResult) {
+      const courseList = promisesResult.shift();
+      this.$set(this, "courses", []);
+      var addedId = [];
+      var courseIndex = 0;
+      var courseCount = 0;
+      promisesResult.forEach((document) => {
+        if (document.exists) {
+          const courseData = courseList[courseIndex];
+          const dataToPush = {
+            name: courseData.name,
+            description: courseData.descriptionHeading,
+            id: courseData.id,
+          };
+          if (!addedId.includes(courseData.id)) {
+            this.courses.push(dataToPush);
+            addedId.push(courseData.id);
           }
-          return Promise.all(permissionCheckPromises);
-        })
-        .then((firebaseResponse) => {
-          this.$set(this, "courses", []);
-          var addedId = [];
-          var courseIndex = 0;
-          var courseCount = 0;
-          firebaseResponse.forEach((document) => {
-            if (document.exists) {
-              const courseData = courseList[courseIndex];
-              const dataToPush = {
-                name: courseData.name,
-                description: courseData.descriptionHeading,
-                id: courseData.id,
-              };
-              if (!addedId.includes(courseData.id)) {
-                this.courses.push(dataToPush);
-                addedId.push(courseData.id);
-              }
-            }
-            courseCount += 1;
-            if (courseCount == 2) {
-              courseIndex += 1;
-              courseCount = 0;
-            }
-          });
-          dialogBox.dismissDialogBox();
-        })
-        .catch((e) => {
-          console.log(e);
-          return false;
-        });
+        }
+        courseCount += 1;
+        if (courseCount == 2) {
+          courseIndex += 1;
+          courseCount = 0;
+        }
+      });
+      this.$data.dialogBox.dismissDialogBox();
+    },
+    promiseErrorHandler(e) {
+      console.log(e);
+      let message = "";
+      if (e.message === "Request failed with status code 401") {
+        // Session timeout.
+        message =
+          "Failed to send request to Classroom API. Please sign-in again";
+      } else {
+        message =
+          "An error occurred while getting the data from ClassroomAPI and Database";
+      }
+      this.$data.dialogBox.dismissDialogBox();
+      this.$data.dialogBox.showDialogBox({
+        dialogBoxContent: {
+          title: {
+            value: "Error",
+            isHTML: false,
+          },
+          content: {
+            value: message,
+            isHTML: false,
+          },
+        },
+        dialogBoxActions: [
+          {
+            buttonContent: {
+              value: "Sign-out",
+              isHTML: false,
+            },
+            buttonClass: "md-primary",
+            onClick: () => {
+              this.$data.dialogBox.dismissDialogBox();
+              this.$router.push({
+                path: "/signIn",
+              });
+            },
+          },
+        ],
+      });
     },
   },
 };

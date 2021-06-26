@@ -8,9 +8,6 @@
 
         <md-card-content>
           <section id="firebaseui-auth-container"></section>
-          <md-button class="md-raised md-primary" v-on:click="forwardToCourses">
-            Click to SignIn</md-button
-          >
         </md-card-content>
       </md-card>
     </div>
@@ -24,12 +21,6 @@ import * as firebaseUi from "firebaseui";
 import "firebaseui/dist/firebaseui.css";
 
 export default Vue.extend({
-  methods: {
-    // TODO: Remove these code after the export from template is completed
-    forwardToCourses() {
-      this.$router.push({ path: "/course" });
-    },
-  },
   mounted() {
     const firebaseAuth = firebase.auth();
     const uiConfig = {

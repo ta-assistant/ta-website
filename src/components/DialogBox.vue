@@ -69,7 +69,7 @@ export type DialogConfig = {
     clickOutsideToClose: boolean;
     fullscreen: boolean;
   };
-  dialogBoxAction: Array<DialogBoxActionObject>;
+  dialogBoxActions: Array<DialogBoxActionObject>;
 };
 
 export default Vue.extend({
@@ -155,7 +155,7 @@ export default Vue.extend({
       this.$set(
         this.$data.dialogBox,
         "dialogBoxActions",
-        dialogConfig.dialogBoxAction ?? []
+        dialogConfig.dialogBoxActions ?? []
       );
 
       this.$data.dialogBox.active = true;
