@@ -38,7 +38,13 @@
               <md-icon v-else>close </md-icon>
             </md-table-cell>
             <md-table-cell>
-              <md-button class="md-raised md-primary">View</md-button>
+              <router-link :to="submission.submissionDetailUrl">
+                <md-button
+                  class="md-raised md-primary"
+                  v-if="submission.isValidUserId"
+                  >View</md-button
+                >
+              </router-link>
             </md-table-cell>
           </md-table-row>
         </md-table>
@@ -85,6 +91,8 @@ type submissionRow = {
   state: string;
   taCliScore: AnyJsonObj;
   classroomScoreSubmit: boolean;
+  submissionDetailUrl: string;
+  isValidUserId: boolean;
 };
 
 interface AnyJsonObj {
@@ -150,7 +158,9 @@ export default Vue.extend({
             firestore
           );
         })
-        .then(this.setDataToDisplay)
+        .then((promisesResult: Array<any>) => {
+          return this.setDataToDisplay(promisesResult, courseId, workId);
+        })
         .catch((e) => {
           this.promiseErrorHandler(e, courseId);
         });
@@ -215,7 +225,11 @@ export default Vue.extend({
       ];
       return Promise.all(promises);
     },
-    setDataToDisplay(promisesResult: Array<any>) {
+    setDataToDisplay(
+      promisesResult: Array<any>,
+      courseId: string,
+      workId: string
+    ) {
       const studentSubmissions: Array<ClassroomStudentSubmission> =
         promisesResult.shift();
       const userIdToStudentIdJson: AnyJsonObj = promisesResult.shift();
@@ -230,6 +244,7 @@ export default Vue.extend({
       const dataToDisplay: Array<submissionRow> = [];
       studentSubmissions.forEach((submission) => {
         let studentId = userIdToStudentIdJson[submission.userId];
+        let isValidUserId: boolean = true;
         let taCliScore: AnyJsonObj = {};
         let classroomScoreSubmit: boolean = false;
         if (
@@ -239,6 +254,7 @@ export default Vue.extend({
           )
         ) {
           studentId = "[StudentId Not found] " + submission.userId;
+          isValidUserId = false;
         }
         if (
           Object.prototype.hasOwnProperty.call(studentIdToTaCliScore, studentId)
@@ -249,9 +265,17 @@ export default Vue.extend({
         }
         dataToDisplay.push({
           studentId: studentId,
+          isValidUserId: isValidUserId,
           state: submission.state,
           taCliScore: taCliScore,
           classroomScoreSubmit: classroomScoreSubmit,
+          submissionDetailUrl:
+            "/course/" +
+            courseId +
+            "/work/" +
+            workId +
+            "/submission/" +
+            studentId,
         });
       });
       this.$set(this, "submissions", dataToDisplay);
