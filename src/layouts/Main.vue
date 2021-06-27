@@ -12,21 +12,13 @@
           >Navigation</md-toolbar
         >
 
-        <md-list>
-          <md-list-item>
-            <md-icon>school</md-icon>
-            <span class="md-list-item-text">Course</span>
-          </md-list-item>
-
-          <md-list-item>
-            <md-icon>account_circle</md-icon>
-            <span class="md-list-item-text">Profile</span>
-          </md-list-item>
-
-          <md-list-item>
-            <md-icon>settings</md-icon>
-            <span class="md-list-item-text">Setting</span>
-          </md-list-item>
+        <md-list v-for="item in menuItems" :key="item.title">
+          <router-link :to="item.routerLink">
+            <md-list-item>
+              <md-icon>{{ item.icon }}</md-icon>
+              <span class="md-list-item-text">{{ item.title }}</span>
+            </md-list-item>
+          </router-link>
         </md-list>
       </md-app-drawer>
 
@@ -55,6 +47,18 @@ export default {
   data() {
     return {
       menuVisible: false,
+      menuItems: [
+        {
+          title: "Course",
+          icon: "school",
+          routerLink: "/course",
+        },
+        {
+          title: "Settings",
+          icon: "settings",
+          routerLink: "/setting",
+        },
+      ],
     };
   },
   mounted() {
