@@ -8,7 +8,9 @@
       :md-value="work.progress"
     ></md-progress-bar>
     <div class="md-layout-item md-large-size-30 md-small-size-100">
-      <md-button class="md-primary md-raised">View Work</md-button>
+      <router-link :to="work.link">
+        <md-button class="md-primary md-raised">View Work</md-button>
+      </router-link>
       <md-button
         class="md-primary md-raised"
         @click="openUrl(work.classroomUrl)"

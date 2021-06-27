@@ -109,7 +109,7 @@ export default Vue.extend({
             dataToDisplay.push({
               name: work.title,
               progress: 0,
-              link: work.id,
+              link: "/course/" + work.courseId + "/work/" + work.id,
               classroomUrl: work.alternateLink,
             });
           }
