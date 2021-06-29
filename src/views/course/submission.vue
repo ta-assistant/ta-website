@@ -275,7 +275,7 @@ export default Vue.extend({
             "/work/" +
             workId +
             "/submission/" +
-            studentId,
+            submission.id,
         });
       });
       this.$set(this, "submissions", dataToDisplay);

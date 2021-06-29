@@ -36,7 +36,7 @@ const routes: Array<RouteConfig> = [
     component: WorkSubmission,
   },
   {
-    path: "/course/:courseId/work/:workId/submission/:studentId",
+    path: "/course/:courseId/work/:workId/submission/:submissionId",
     name: "exercise",
     component: WorkDetail,
   },
