@@ -1,6 +1,13 @@
 <template>
   <div class="work md-elevation-3 md-layout">
     <p class="md-layout-item md-large-size-30 md-small-size-100">
+      <md-icon v-if="work.associatedWithDeveloper"
+        >check_circle
+        <md-tooltip md-direction="top"
+          >This work is fully supported the TA Assistant
+          functionality</md-tooltip
+        ></md-icon
+      >
       {{ work.name }}
     </p>
     <md-progress-bar
@@ -27,6 +34,7 @@ export type Work = {
   progress: number;
   link: string;
   classroomUrl: string;
+  associatedWithDeveloper: boolean;
 };
 export default Vue.extend({
   name: "WorkProgress",

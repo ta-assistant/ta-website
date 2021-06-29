@@ -3,7 +3,10 @@
     <div class="container">
       <h1 class="md-title text-left">{{ courseName }}</h1>
       <div class="menu">
-        <md-button class="md-primary md-raised">
+        <md-button
+          class="md-primary md-raised"
+          @click="createNewWorkDialog.active = true"
+        >
           <md-icon>add</md-icon>
           New Work
         </md-button>
@@ -35,16 +38,22 @@ import WorkProgress, { Work } from "../../components/WorkProgress.vue";
 import firebase from "firebase";
 import axios from "axios";
 import { DialogBoxActionObject } from "@/components/DialogBox.vue";
+import CreateNewWorkDialog from "@/components/CreateNewWorkDialog.vue";
 export default Vue.extend({
   components: {
     Layout,
     WorkProgress,
+    CreateNewWorkDialog,
   },
   data() {
     return {
       courseName: "Loading . . .",
       dialogBox: () => {},
       works: [],
+      unlinkedWork: [],
+      createNewWorkDialog: {
+        active: false,
+      },
     };
   },
 
@@ -104,14 +113,17 @@ export default Vue.extend({
       const dataToDisplay: Array<Work> = [];
       promisesResult.forEach(
         (doc: firebase.firestore.DocumentSnapshot, index: number) => {
+          const work = courseWork[index];
           if (doc.exists) {
-            const work = courseWork[index];
             dataToDisplay.push({
               name: work.title,
               progress: 0,
               link: "/course/" + work.courseId + "/work/" + work.id,
               classroomUrl: work.alternateLink,
+              associatedWithDeveloper: work.associatedWithDeveloper,
             });
+          } else {
+            this.$data.unlinkedWork.push(work);
           }
         }
       );
