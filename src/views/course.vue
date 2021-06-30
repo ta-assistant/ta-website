@@ -37,6 +37,7 @@ import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages"
 import { oauthCredential } from "@/types/Google/oauthCredential";
 import { Course, CourseState } from "@/types/ClassroomAPI/courses";
 import { DialogBox, DialogBoxAction } from "@/types/components/DialogBox";
+import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
 
 export default Vue.extend({
   components: {
@@ -60,14 +61,16 @@ export default Vue.extend({
     ) {
       const firestore = firebase.firestore();
       const classroomApi = new ClassroomAPI(oauthCredential);
+      const database = new TaAssistantDb(firestore);
       this.$set(this, "dialogBox", dialogBox);
-      return classroomApi.courses
+      return classroomApi
+        .course()
         .get()
         .then((res) => {
           console.log(res);
           return this.checkClassExistsInDatabase(
             res.data.courses,
-            firestore,
+            database,
             firebaseUser
           );
         })
@@ -76,7 +79,7 @@ export default Vue.extend({
     },
     checkClassExistsInDatabase(
       courses: Array<Course>,
-      firestore: firebase.firestore.Firestore,
+      database: TaAssistantDb,
       firebaseUser: firebase.User
     ) {
       this.$set(this.courses, "fullCoursesList", courses);
@@ -90,12 +93,9 @@ export default Vue.extend({
         [];
       activeCourseList.forEach((course) => {
         promisesArray.push(
-          firestore
-            .collection("Classrooms")
-            .doc(course.id.toString())
-            .collection("teachers")
-            .doc(firebaseUser.uid)
-            .get()
+          database.classroom(course.id.toString()).teacher().get({
+            userId: firebaseUser.uid,
+          })
         );
       });
       return Promise.all(promisesArray);
