@@ -67,7 +67,7 @@ import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
 import firebase from "firebase";
 import axios from "axios";
-import { DialogBoxActionObject } from "@/components/DialogBox.vue";
+import { DialogBoxAction } from "@/types/components/DialogBox";
 
 export type ClassroomStudentSubmission = {
   courseId: string;
@@ -284,7 +284,7 @@ export default Vue.extend({
     promiseErrorHandler(e: any, courseId: string) {
       console.log(e);
       let message = "";
-      let action: Array<DialogBoxActionObject> = [];
+      let action: Array<DialogBoxAction> = [];
       if (e.message === "Request failed with status code 401") {
         // Session timeout.
         message =

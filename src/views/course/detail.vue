@@ -37,7 +37,7 @@ import Layout from "../../layouts/Main.vue";
 import WorkProgress, { Work } from "../../components/WorkProgress.vue";
 import firebase from "firebase";
 import axios from "axios";
-import { DialogBoxActionObject } from "@/components/DialogBox.vue";
+import { DialogBoxAction } from "@/types/components/DialogBox";
 import CreateNewWorkDialog from "@/components/CreateNewWorkDialog.vue";
 export default Vue.extend({
   components: {
@@ -133,7 +133,7 @@ export default Vue.extend({
     promiseErrorHandler(e: any) {
       console.log(e);
       let message = "";
-      let action: Array<DialogBoxActionObject> = [];
+      let action: Array<DialogBoxAction> = [];
       if (e.message === "Request failed with status code 401") {
         // Session timeout.
         message =

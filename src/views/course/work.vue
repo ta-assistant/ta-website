@@ -61,7 +61,7 @@ import Comment from "../../components/Comment.vue";
 import CommentEditor from "../../components/CommentEditor.vue";
 import firebase from "firebase";
 import axios from "axios";
-import { DialogBoxActionObject } from "@/components/DialogBox.vue";
+import { DialogBoxAction } from "@/types/components/DialogBox";
 
 export default Vue.extend({
   name: "WorkDetail",
@@ -192,7 +192,7 @@ export default Vue.extend({
     promiseErrorHandler(e: any, courseId: string, workId: string) {
       console.log(e);
       let message = "";
-      let action: Array<DialogBoxActionObject> = [];
+      let action: Array<DialogBoxAction> = [];
       if (e.message === "Request failed with status code 401") {
         // Session timeout.
         message =
