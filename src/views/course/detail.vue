@@ -88,7 +88,7 @@ export default Vue.extend({
         .then((res) => {
           // Set CourseName
           this.courseName = res.data.name;
-          return classroomApi.course(courseId).courseWork().get();
+          return classroomApi.course(courseId).courseWork().list();
         })
         .then((res) => {
           return this.getWorksFromDatabase(res, database);
