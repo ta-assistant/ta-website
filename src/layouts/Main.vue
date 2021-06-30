@@ -62,7 +62,7 @@ export default {
     };
   },
   mounted() {
-    this.$refs.dialogBox.showDialogBox({
+    this.$refs.dialogBox.show({
       dialogBoxContent: {
         title: {
           value: "Loading",
@@ -74,6 +74,7 @@ export default {
         },
       },
       config: {},
+      dialogBoxActions: [],
     });
     firebase.auth().onAuthStateChanged((user) => {
       try {
@@ -92,7 +93,7 @@ export default {
         return;
       }
       if (typeof this.credentialCheckCallback !== "function") {
-        this.$refs.dialogBox.dismissDialogBox();
+        this.$refs.dialogBox.dismiss();
         return;
       }
       console.log(user.uid);

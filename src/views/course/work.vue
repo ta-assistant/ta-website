@@ -119,7 +119,7 @@ export default Vue.extend({
           this.$data.taCliScore = docSnap.data();
           this.$data.classroomScoreSubmit =
             docSnap.data()?.classroomScoreSubmit ?? false;
-          this.$data.dialogBox.dismissDialogBox();
+          this.$data.dialogBox.dismiss();
         })
         .catch((e) => {
           return this.promiseErrorHandler(e, courseId, workId);
@@ -205,7 +205,7 @@ export default Vue.extend({
             },
             buttonClass: "md-primary",
             onClick: () => {
-              this.$data.dialogBox.dismissDialogBox();
+              this.$data.dialogBox.dismiss();
               this.$router.push({
                 path: "/signIn",
               });
@@ -221,7 +221,7 @@ export default Vue.extend({
             },
             buttonClass: "md-primary",
             onClick: () => {
-              this.$data.dialogBox.dismissDialogBox();
+              this.$data.dialogBox.dismiss();
               this.$router.push({
                 path: "/course/" + courseId + "/work/" + workId,
               });
@@ -237,8 +237,8 @@ export default Vue.extend({
             "An error occurred while getting the data from ClassroomAPI and Database";
         }
       }
-      this.$data.dialogBox.dismissDialogBox();
-      this.$data.dialogBox.showDialogBox({
+      this.$data.dialogBox.dismiss();
+      this.$data.dialogBox.show({
         dialogBoxContent: {
           title: {
             value: "Error",

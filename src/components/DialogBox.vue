@@ -82,7 +82,7 @@ export default Vue.extend({
     };
   },
   methods: {
-    showDialogBox(dialogConfig: DialogConfig): void {
+    show(dialogConfig: DialogConfig): void {
       this.$data.dialogBox.active = false;
 
       // Set dialogBox Config
@@ -144,7 +144,7 @@ export default Vue.extend({
 
       this.$data.dialogBox.active = true;
     },
-    dismissDialogBox(): void {
+    dismiss(): void {
       this.$data.dialogBox.active = false;
     },
   },

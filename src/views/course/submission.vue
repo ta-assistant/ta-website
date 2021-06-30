@@ -279,7 +279,7 @@ export default Vue.extend({
         });
       });
       this.$set(this, "submissions", dataToDisplay);
-      this.$data.dialogBox.dismissDialogBox();
+      this.$data.dialogBox.dismiss();
     },
     promiseErrorHandler(e: any, courseId: string) {
       console.log(e);
@@ -297,7 +297,7 @@ export default Vue.extend({
             },
             buttonClass: "md-primary",
             onClick: () => {
-              this.$data.dialogBox.dismissDialogBox();
+              this.$data.dialogBox.dismiss();
               this.$router.push({
                 path: "/signIn",
               });
@@ -313,7 +313,7 @@ export default Vue.extend({
             },
             buttonClass: "md-primary",
             onClick: () => {
-              this.$data.dialogBox.dismissDialogBox();
+              this.$data.dialogBox.dismiss();
               this.$router.push({
                 path: "/course/" + courseId,
               });
@@ -329,8 +329,8 @@ export default Vue.extend({
             "An error occurred while getting the data from ClassroomAPI and Database";
         }
       }
-      this.$data.dialogBox.dismissDialogBox();
-      this.$data.dialogBox.showDialogBox({
+      this.$data.dialogBox.dismiss();
+      this.$data.dialogBox.show({
         dialogBoxContent: {
           title: {
             value: "Error",
