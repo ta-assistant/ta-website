@@ -1,9 +1,10 @@
 import { oauthCredential } from "@/types/Google/oauthCredential";
 import { AxiosPromise } from "axios";
 import { api } from "./api";
+import { StudentSubmission } from "./studentSubmission";
 
 export class CourseWork extends api {
-  courseId: string | null;
+  courseId: string;
   courseWorkId: string | null;
 
   /**
@@ -14,24 +15,55 @@ export class CourseWork extends api {
    */
   constructor(
     oauthCredential: oauthCredential,
-    courseId?: string,
+    courseId: string,
     courseWorkId?: string
   ) {
     super(oauthCredential);
-    this.courseId = courseId ?? null;
+    this.courseId = courseId;
     this.courseWorkId = courseWorkId ?? null;
+  }
+
+  studentSubmission(submissionId?: string): StudentSubmission {
+    if (this.courseWorkId === null) {
+      throw Error(
+        "To get the studetnSubmission, the courseWorkId must be specified"
+      );
+    }
+    return new StudentSubmission(
+      this.getOAuthCredential(),
+      this.courseId,
+      this.courseWorkId,
+      submissionId
+    );
+  }
+
+  /**
+   * Get the all courseWork info.
+   */
+  list(): AxiosPromise {
+    return this.sendRequest({
+      method: "GET",
+      url:
+        "https://classroom.googleapis.com/v1/courses/" +
+        this.courseId +
+        "/courseWork",
+    });
   }
 
   /**
    * Get the courseWork info.
    */
   get(): AxiosPromise {
-    return super.sendRequest({
+    if (this.courseWorkId === null) {
+      throw Error("To get the courseWork. The courseWorkId must be specified");
+    }
+    return this.sendRequest({
       method: "GET",
       url:
         "https://classroom.googleapis.com/v1/courses/" +
         this.courseId +
-        "/courseWork",
+        "/courseWork/" +
+        this.courseWorkId,
     });
   }
 }

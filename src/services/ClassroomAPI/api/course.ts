@@ -23,15 +23,27 @@ export class Course extends api {
   }
 
   /**
-   *
+   * Get the specific courses
    * @returns AxiosPromises
    */
   get(): AxiosPromise {
-    return super.sendRequest({
+    if (this.courseId === null) {
+      throw Error("To get the specific course. The courseId must be specified");
+    }
+    return this.sendRequest({
       method: "GET",
-      url:
-        "https://classroom.googleapis.com/v1/courses/" +
-        (this.courseId !== null ? this.courseId : ""),
+      url: "https://classroom.googleapis.com/v1/courses/" + this.courseId,
+    });
+  }
+
+  /**
+   * List all courses;
+   * @returns AxiosPromises
+   */
+  list(): AxiosPromise {
+    return this.sendRequest({
+      method: "GET",
+      url: "https://classroom.googleapis.com/v1/courses/",
     });
   }
 }

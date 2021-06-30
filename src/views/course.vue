@@ -66,7 +66,7 @@ export default Vue.extend({
       this.$set(this, "dialogBox", dialogBox);
       return classroomApi
         .course()
-        .get()
+        .list()
         .then((res) => {
           console.log(res);
           return this.checkClassExistsInDatabase(
