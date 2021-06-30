@@ -32,7 +32,7 @@
 
 <script>
 import firebase from "firebase";
-import DialogBox from "@/components/DialogBox.vue";
+import DialogBox from "@/components/DialogBox/DialogBox.vue";
 
 export default {
   name: "Main",
