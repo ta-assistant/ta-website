@@ -1,7 +1,16 @@
 <template>
   <layout :credentialCheckCallback="callbackHandler">
     <div class="container">
-      <h1 class="md-title">{{ workName }}</h1>
+      <h1 class="md-title">
+        {{ work.title }}
+        <md-icon v-if="work.associatedWithDeveloper"
+          >check_circle
+          <md-tooltip md-direction="top"
+            >This work is fully supported the TA Assistant
+            functionality</md-tooltip
+          ></md-icon
+        >
+      </h1>
       <md-progress-bar :md-value="80"></md-progress-bar>
       <div class="menu">
         <div class="submenu">
@@ -27,7 +36,7 @@
             <md-table-head>Actions</md-table-head>
           </md-table-row>
           <md-table-row
-            v-for="submission in submissions"
+            v-for="submission in submissions.displaySubmissionsList"
             :key="submission.studentId"
           >
             <md-table-cell>{{ submission.studentId }}</md-table-cell>
@@ -66,25 +75,14 @@
 import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
 import firebase from "firebase";
-import axios from "axios";
-import { DialogBoxAction } from "@/types/components/DialogBox";
-
-export type ClassroomStudentSubmission = {
-  courseId: string;
-  courseWorkId: string;
-  id: string;
-  userId: string;
-  creationTime: string;
-  updateTime: string;
-  state: string;
-  late: boolean;
-  draftGrade: number;
-  assignedGrade: number;
-  alternateLink: string;
-  courseWorkType: string;
-  associatedWithDeveloper: boolean;
-  submissionHistory: Array<any>;
-};
+import { DialogBox, DialogBoxAction } from "@/types/components/DialogBox";
+import { StudentSubmission } from "@/types/ClassroomAPI/submission";
+import ClassroomApi from "@/services/ClassroomAPI/classroomApi";
+import { oauthCredential } from "@/types/Google/oauthCredential";
+import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
+import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
+import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
+import { AxiosResponse } from "axios";
 
 type submissionRow = {
   studentId: string;
@@ -106,138 +104,85 @@ export default Vue.extend({
   },
   data() {
     return {
-      workName: "Loading . . .",
+      work: {
+        title: "Loading. . .",
+      },
       dialogBox: () => {},
-      submissions: [],
+      submissions: {
+        fullSubmissionsList: [],
+        displaySubmissionsList: [],
+      },
+      students: {
+        classroomUserIdToStudetnId: {},
+      },
     };
   },
   methods: {
     callbackHandler(
       firebaseUser: firebase.User,
-      authCredential: any,
-      dialogBox: any
+      authCredential: oauthCredential,
+      dialogBox: DialogBox
     ) {
       const firestore = firebase.firestore();
       this.$set(this, "dialogBox", dialogBox);
-      const courseId: string = this.$route.params.courseId;
-      const workId: string = this.$route.params.workId;
-      return this.getWorkDetails(courseId, workId, authCredential.credential)
-        .then((res: any) => {
+      const classroomApi = new ClassroomApi(authCredential);
+      const database = new TaAssistantDb(firestore);
+
+      const courseId = this.$route.params.courseId;
+      const workId = this.$route.params.workId;
+      return classroomApi
+        .course(courseId)
+        .courseWork(workId)
+        .get()
+        .then((res: AxiosResponse) => {
           // Set the work name
-          this.$data.workName = res.data.title + " Submission";
-          return this.getSubmissionFromClassroomApi(
-            courseId,
-            workId,
-            authCredential.credential
-          );
+          this.$data.work = res.data;
+          this.$data.work.title += " Submission";
+          return classroomApi
+            .course(courseId)
+            .courseWork(workId)
+            .studentSubmission()
+            .list();
         })
-        .then((res: any) => {
-          const studentSubmissions: Array<ClassroomStudentSubmission> =
+        .then((res: AxiosResponse) => {
+          const studentSubmissions: Array<StudentSubmission> =
             res.data.studentSubmissions;
-          return this.getStudentsFromDatabase(
-            courseId,
-            studentSubmissions,
-            firestore
+          this.$set(
+            this.submissions,
+            "fullSubmissionsList",
+            studentSubmissions
           );
+          return database.classroom(courseId).student().list();
         })
-        .then((promisesResult: Array<any>) => {
-          const studentSubmissions: Array<ClassroomStudentSubmission> =
-            promisesResult.shift();
-          const firestoreResult: Array<firebase.firestore.DocumentData> =
-            promisesResult.shift();
+        .then((querySnap: firebase.firestore.QuerySnapshot) => {
           // Create the object to convert from classroomUserId to studentId
-          const userIdToStudentIdJson: AnyJsonObj = {};
-          firestoreResult.forEach((doc) => {
-            userIdToStudentIdJson[doc.data().classroomUserId] =
+          const classroomUserIdToStudentId: AnyJsonObj = {};
+          querySnap.forEach((doc) => {
+            classroomUserIdToStudentId[doc.data().classroomUserId] =
               doc.data().studentId;
           });
-          return this.getScoreFromDatabase(
-            workId,
-            studentSubmissions,
-            userIdToStudentIdJson,
-            firestore
+          this.$set(
+            this.students,
+            "classroomUserIdToStudetnId",
+            classroomUserIdToStudentId
           );
+          return database.work(workId).score().list();
         })
-        .then((promisesResult: Array<any>) => {
-          return this.setDataToDisplay(promisesResult, courseId, workId);
-        })
+        .then(this.setDataToDisplay)
         .catch((e) => {
           this.promiseErrorHandler(e, courseId);
         });
     },
-
-    getWorkDetails(courseId: string, workId: string, credential: any) {
-      return axios({
-        method: "GET",
-        url:
-          "https://classroom.googleapis.com/v1/courses/" +
-          courseId +
-          "/courseWork/" +
-          workId,
-        headers: {
-          Authorization: "Bearer " + credential.oauthAccessToken,
-        },
-      });
-    },
-    getSubmissionFromClassroomApi(
-      courseId: string,
-      workId: string,
-      credential: any
-    ) {
-      return axios({
-        method: "GET",
-        url:
-          "https://classroom.googleapis.com/v1/courses/" +
-          courseId +
-          "/courseWork/" +
-          workId +
-          "/studentSubmissions",
-        headers: {
-          Authorization: "Bearer " + credential.oauthAccessToken,
-        },
-      });
-    },
-    getStudentsFromDatabase(
-      courseId: string,
-      studentSubmission: Array<any>,
-      firestore: firebase.firestore.Firestore
-    ) {
-      const promises: Array<any> = [
-        studentSubmission,
-        firestore
-          .collection("Classrooms")
-          .doc(courseId)
-          .collection("students")
-          .get(),
-      ];
-      return Promise.all(promises);
-    },
-    getScoreFromDatabase(
-      workId: string,
-      studentSubmission: Array<ClassroomStudentSubmission>,
-      userIdToStudentIdJson: any,
-      firestore: firebase.firestore.Firestore
-    ) {
-      const promises: Array<any> = [
-        studentSubmission,
-        userIdToStudentIdJson,
-        firestore.collection("Works").doc(workId).collection("scores").get(),
-      ];
-      return Promise.all(promises);
-    },
-    setDataToDisplay(
-      promisesResult: Array<any>,
-      courseId: string,
-      workId: string
-    ) {
-      const studentSubmissions: Array<ClassroomStudentSubmission> =
-        promisesResult.shift();
-      const userIdToStudentIdJson: AnyJsonObj = promisesResult.shift();
-      const firestoreResult: Array<firebase.firestore.DocumentData> =
-        promisesResult.shift();
+    setDataToDisplay(querySnapshot: firebase.firestore.QuerySnapshot) {
+      const courseId = this.$route.params.courseId;
+      const workId = this.$route.params.workId;
+      const studentSubmissions: Array<StudentSubmission> =
+        this.$data.submissions.fullSubmissionsList;
+      const userIdToStudentIdJson: AnyJsonObj =
+        this.$data.students.classroomUserIdToStudetnId;
 
       const studentIdToTaCliScore: AnyJsonObj = {};
-      firestoreResult.forEach((doc) => {
+      querySnapshot.forEach((doc) => {
         studentIdToTaCliScore[doc.id] = doc.data();
       });
 
@@ -247,18 +192,11 @@ export default Vue.extend({
         let isValidUserId: boolean = true;
         let taCliScore: AnyJsonObj = {};
         let classroomScoreSubmit: boolean = false;
-        if (
-          !Object.prototype.hasOwnProperty.call(
-            userIdToStudentIdJson,
-            submission.userId
-          )
-        ) {
+        if (typeof userIdToStudentIdJson[submission.userId] === "undefined") {
           studentId = "[StudentId Not found] " + submission.userId;
           isValidUserId = false;
         }
-        if (
-          Object.prototype.hasOwnProperty.call(studentIdToTaCliScore, studentId)
-        ) {
+        if (typeof studentIdToTaCliScore[studentId] !== "undefined") {
           taCliScore = studentIdToTaCliScore[studentId];
           classroomScoreSubmit =
             studentIdToTaCliScore[studentId].classroomScoreSubmit ?? false;
@@ -278,62 +216,54 @@ export default Vue.extend({
             submission.id,
         });
       });
-      this.$set(this, "submissions", dataToDisplay);
+      this.$set(this.submissions, "displaySubmissionsList", dataToDisplay);
       this.$data.dialogBox.dismiss();
     },
     promiseErrorHandler(e: any, courseId: string) {
       console.log(e);
-      let message = "";
-      let action: Array<DialogBoxAction> = [];
-      if (e.message === "Request failed with status code 401") {
-        // Session timeout.
-        message =
-          "Failed to send request to Classroom API. Please sign-in again";
-        action = [
-          {
-            buttonContent: {
-              value: "Sign-out",
-              isHTML: false,
-            },
-            buttonClass: "md-primary",
-            onClick: () => {
-              this.$data.dialogBox.dismiss();
-              this.$router.push({
-                path: "/signIn",
-              });
-            },
-          },
-        ];
-      } else {
-        action = [
-          {
-            buttonContent: {
-              value: "Back to works",
-              isHTML: false,
-            },
-            buttonClass: "md-primary",
-            onClick: () => {
-              this.$data.dialogBox.dismiss();
-              this.$router.push({
-                path: "/course/" + courseId,
-              });
-            },
-          },
-        ];
-        if (e.message === "Request failed with status code 403") {
-          // User isn't an teacher or have no permission;
-          message =
-            "You don't have permission to access current course's works on Google Classroom.";
-        } else {
-          message =
-            "An error occurred while getting the data from ClassroomAPI and Database";
+      let title: string = "";
+      let message: string = "";
+      let actions: Array<DialogBoxAction> = [];
+      const dialogActionButtons = new DialogActionButtons(
+        this.$router,
+        this.$data.dialogBox,
+        "/course"
+      );
+      if (
+        typeof e.response !== "undefined" &&
+        typeof e.response.status !== "undefined"
+      ) {
+        console.log(e.response.data);
+        title = "Classroom API Error";
+        switch (e.response.status) {
+          case 401:
+            message = ClassroomApiErrorMessage.invalidOauthAccessToken;
+            actions.push(dialogActionButtons.signOutButton());
+            break;
+          case 403:
+            message = ClassroomApiErrorMessage.permissionDenined;
+            actions.push(dialogActionButtons.backButton());
+            break;
+          case 404:
+            message = ClassroomApiErrorMessage.contentNotFound;
+            actions.push(dialogActionButtons.backButton());
+            break;
+          default:
+            message = ClassroomApiErrorMessage.unknownError;
+            actions.push(dialogActionButtons.backButton());
         }
+      } else {
+        title = "Database Error";
+        message =
+          "An error occurred while getting data from the database. Please reload the page.";
+        actions.push(dialogActionButtons.dismissButton());
       }
+
       this.$data.dialogBox.dismiss();
       this.$data.dialogBox.show({
         dialogBoxContent: {
           title: {
-            value: "Error",
+            value: title,
             isHTML: false,
           },
           content: {
@@ -341,7 +271,7 @@ export default Vue.extend({
             isHTML: false,
           },
         },
-        dialogBoxActions: action,
+        dialogBoxActions: actions,
       });
     },
   },
