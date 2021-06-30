@@ -2,10 +2,14 @@ import { oauthCredential } from "@/types/Google/oauthCredential";
 import axios, { AxiosPromise, AxiosRequestConfig } from "axios";
 
 export class api {
-  oauthCredential: oauthCredential;
+  private _oauthCredential: oauthCredential;
 
   constructor(oauthCredential: oauthCredential) {
-    this.oauthCredential = oauthCredential;
+    this._oauthCredential = oauthCredential;
+  }
+
+  getOAuthCredential(): oauthCredential {
+    return this._oauthCredential;
   }
 
   sendRequest(config: AxiosRequestConfig): AxiosPromise {
@@ -13,7 +17,7 @@ export class api {
       config.headers = {};
     }
     config.headers.Authorization =
-      "Bearer " + this.oauthCredential.credential.oauthAccessToken;
+      "Bearer " + this._oauthCredential.credential.oauthAccessToken;
     return axios(config);
   }
 }
