@@ -17,12 +17,8 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue";
+import { Course } from "@/types/ClassroomAPI/courses";
 
-export type Course = {
-  name: string;
-  description: string;
-  id: string;
-};
 export default Vue.extend({
   props: {
     course: {

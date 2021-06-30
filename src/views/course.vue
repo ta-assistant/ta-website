@@ -6,9 +6,9 @@
         ><md-icon>add</md-icon>New Class</md-button
       >
     </div>
-    <div class="md-layout" v-if="courses.length !== 0">
+    <div class="md-layout" v-if="courses.displayCoursesList.length !== 0">
       <div
-        v-for="course in courses"
+        v-for="course in courses.displayCoursesList"
         :key="course.id"
         class="md-layout-item md-medium-size-100 md-large-size-50 mb-4"
       >
@@ -27,64 +27,67 @@
   </layout>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
 import firebase from "firebase";
 import Layout from "../layouts/Main.vue";
 import CourseCard from "@/components/CourseCard.vue";
-import axios from "axios";
+import ClassroomAPI from "@/services/ClassroomAPI/classroomApi";
+import { oauthCredential } from "@/types/Google/oauthCredential";
+import { Course, CourseState } from "@/types/ClassroomAPI/courses";
 
-export default {
+export default Vue.extend({
   components: {
     Layout,
     CourseCard,
   },
   data() {
     return {
-      courses: [],
-      dialogBox: {},
+      courses: {
+        displayCoursesList: [],
+        fullCoursesList: [],
+      },
+      dialogBox: () => {},
     };
   },
   methods: {
-    callbackHandler(firebaseUser, authCredential, dialogBox) {
+    callbackHandler(
+      firebaseUser: firebase.User,
+      oauthCredential: oauthCredential,
+      dialogBox: any
+    ) {
       const firestore = firebase.firestore();
+      const classroomApi = new ClassroomAPI(oauthCredential);
       this.$set(this, "dialogBox", dialogBox);
-      return this.getCoursesFromClassroomApi(authCredential.credential)
+      return classroomApi.courses
+        .get()
         .then((res) => {
-          return this.generatePermissionCheckPromises(
-            res,
+          console.log(res);
+          return this.checkClassExistsInDatabase(
+            res.data.courses,
             firestore,
             firebaseUser
           );
         })
-        .then(this.setCourseData)
+        .then(this.setCoursesDisplayData)
         .catch(this.promiseErrorHandler);
     },
-    getCoursesFromClassroomApi(credential) {
-      return axios({
-        method: "GET",
-        url: "https://classroom.googleapis.com/v1/courses",
-        headers: {
-          Authorization: "Bearer " + credential.oauthAccessToken,
-        },
+    checkClassExistsInDatabase(
+      courses: Array<Course>,
+      firestore: firebase.firestore.Firestore,
+      firebaseUser: firebase.User
+    ) {
+      this.$set(this.courses, "fullCoursesList", courses);
+      const activeCourseList: Array<Course> = [];
+      courses.forEach((course) => {
+        activeCourseList.push(course) &&
+          course.courseState === CourseState.ACTIVE;
       });
-    },
-    generatePermissionCheckPromises(res, firestore, firebaseUser) {
-      console.log(res.data);
-      const responseCourses = res.data.courses;
-      const courseList = [];
-      console.log(res);
-      for (var courseIndex in responseCourses) {
-        const course = responseCourses[courseIndex];
-        if (course.courseState === "ACTIVE") {
-          courseList.push(course);
-        }
-      }
 
-      const permissionCheckPromises = [];
-      permissionCheckPromises.push(courseList);
-      for (var courseIndex in courseList) {
-        const course = courseList[courseIndex];
-        permissionCheckPromises.push(
+      const promisesArray: Array<Promise<firebase.firestore.DocumentSnapshot>> =
+        [];
+      activeCourseList.forEach((course) => {
+        promisesArray.push(
           firestore
             .collection("Classrooms")
             .doc(course.id.toString())
@@ -92,46 +95,24 @@ export default {
             .doc(firebaseUser.uid)
             .get()
         );
-        permissionCheckPromises.push(
-          firestore
-            .collection("Classrooms")
-            .doc(course.id)
-            .collection("students")
-            .doc(firebaseUser.uid)
-            .get()
-        );
-      }
-      return Promise.all(permissionCheckPromises);
+      });
+      return Promise.all(promisesArray);
     },
-    setCourseData(promisesResult) {
-      const courseList = promisesResult.shift();
-      this.$set(this, "courses", []);
-      var addedId = [];
-      var courseIndex = 0;
-      var courseCount = 0;
-      promisesResult.forEach((document) => {
-        if (document.exists) {
-          const courseData = courseList[courseIndex];
-          const dataToPush = {
-            name: courseData.name,
-            description: courseData.descriptionHeading,
-            id: courseData.id,
-          };
-          if (!addedId.includes(courseData.id)) {
-            this.courses.push(dataToPush);
-            addedId.push(courseData.id);
+    setCoursesDisplayData(promisesResult: any) {
+      this.$set(this.courses, "displayCourses", []);
+      promisesResult.forEach(
+        (document: firebase.firestore.DocumentData, index: number) => {
+          if (document.exists) {
+            const course = this.$data.courses.fullCoursesList[index];
+            this.$data.courses.displayCoursesList.push(course);
           }
         }
-        courseCount += 1;
-        if (courseCount == 2) {
-          courseIndex += 1;
-          courseCount = 0;
-        }
-      });
+      );
       this.$data.dialogBox.dismissDialogBox();
     },
-    promiseErrorHandler(e) {
-      console.log(e);
+    promiseErrorHandler(e: any) {
+      console.log(JSON.stringify(e));
+      console.log(e.data);
       let message = "";
       if (e.message === "Request failed with status code 401") {
         // Session timeout.
@@ -171,7 +152,7 @@ export default {
       });
     },
   },
-};
+});
 </script>
 
 <style lang="postcss">
