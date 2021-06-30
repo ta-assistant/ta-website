@@ -38,6 +38,7 @@ import { oauthCredential } from "@/types/Google/oauthCredential";
 import { Course, CourseState } from "@/types/ClassroomAPI/courses";
 import { DialogBox, DialogBoxAction } from "@/types/components/DialogBox";
 import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
+import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
 
 export default Vue.extend({
   components: {
@@ -117,6 +118,11 @@ export default Vue.extend({
       let title: string = "";
       let message: string = "";
       let actions: Array<DialogBoxAction> = [];
+      const dialogActionButtons = new DialogActionButtons(
+        this.$router,
+        this.$data.dialogBox
+      );
+
       if (
         typeof e.response !== "undefined" &&
         typeof e.response.status !== "undefined"
@@ -133,32 +139,12 @@ export default Vue.extend({
           default:
             message = ClassroomApiErrorMessage.unknownError;
         }
-        actions.push({
-          buttonContent: {
-            value: "sign-out",
-            isHTML: false,
-          },
-          buttonClass: "md-primary",
-          onClick: async () => {
-            await firebase.auth().signOut();
-            this.$data.dialogBox.dismiss();
-            this.$router.push({ path: "/signIn" });
-          },
-        });
+        actions.push(dialogActionButtons.signOutButton());
       } else {
         title = "Database Error";
         message =
           "An error occurred while getting data from the database. Please reload the page.";
-        actions.push({
-          buttonContent: {
-            value: "dismiss",
-            isHTML: false,
-          },
-          buttonClass: "md-primary",
-          onClick: async () => {
-            this.$data.dialogBox.dismiss();
-          },
-        });
+        actions.push(dialogActionButtons.dismissButton());
       }
 
       this.$data.dialogBox.dismiss();
