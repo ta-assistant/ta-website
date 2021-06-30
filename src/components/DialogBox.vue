@@ -43,34 +43,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-
-export type DialogBoxActionObject = {
-  buttonContent: {
-    value: string;
-    isHTML: boolean;
-  };
-  buttonClass: string;
-  onClick: Function;
-};
-
-export type DialogConfig = {
-  dialogBoxContent: {
-    title: {
-      value: string;
-      isHTML: boolean;
-    };
-    content: {
-      value: string;
-      isHTML: boolean;
-    };
-  };
-  config: {
-    closeOnEsc: boolean;
-    clickOutsideToClose: boolean;
-    fullscreen: boolean;
-  };
-  dialogBoxActions: Array<DialogBoxActionObject>;
-};
+import { DialogConfig } from "@/types/components/DialogBox";
 
 export default Vue.extend({
   name: "DialogBox",
@@ -128,7 +101,7 @@ export default Vue.extend({
         dialogConfig.config.fullscreen ?? false;
 
       // Set dialogBox Content
-      if (typeof dialogConfig.dialogBoxContent.title === "undefined") {
+      if (typeof dialogConfig.dialogBoxContent?.title === "undefined") {
         dialogConfig.dialogBoxContent.title = {
           value: "",
           isHTML: false,
@@ -155,7 +128,18 @@ export default Vue.extend({
       this.$set(
         this.$data.dialogBox,
         "dialogBoxActions",
-        dialogConfig.dialogBoxActions ?? []
+        dialogConfig.dialogBoxActions ?? [
+          {
+            buttonContent: {
+              value: "Close",
+              isHTML: false,
+            },
+            buttonClass: "md-primary",
+            onClick: (): void => {
+              this.$data.dialogBox.active = false;
+            },
+          },
+        ]
       );
 
       this.$data.dialogBox.active = true;
