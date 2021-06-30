@@ -151,6 +151,10 @@ export default Vue.extend({
             message = ClassroomApiErrorMessage.invalidOauthAccessToken;
             actions.push(dialogActionButtons.signOutButton());
             break;
+          case 404:
+            message = ClassroomApiErrorMessage.contentNotFound;
+            actions.push(dialogActionButtons.backButton());
+            break;
           case 403:
             message = ClassroomApiErrorMessage.permissionDenined;
             actions.push(dialogActionButtons.backButton());
