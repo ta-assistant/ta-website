@@ -33,8 +33,10 @@ import firebase from "firebase";
 import Layout from "../layouts/Main.vue";
 import CourseCard from "@/components/CourseCard.vue";
 import ClassroomAPI from "@/services/ClassroomAPI/classroomApi";
+import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
 import { oauthCredential } from "@/types/Google/oauthCredential";
 import { Course, CourseState } from "@/types/ClassroomAPI/courses";
+import { DialogBox, DialogBoxAction } from "@/types/components/DialogBox";
 
 export default Vue.extend({
   components: {
@@ -54,7 +56,7 @@ export default Vue.extend({
     callbackHandler(
       firebaseUser: firebase.User,
       oauthCredential: oauthCredential,
-      dialogBox: any
+      dialogBox: DialogBox
     ) {
       const firestore = firebase.firestore();
       const classroomApi = new ClassroomAPI(oauthCredential);
@@ -108,25 +110,62 @@ export default Vue.extend({
           }
         }
       );
-      this.$data.dialogBox.dismissDialogBox();
+      this.$data.dialogBox.dismiss();
     },
     promiseErrorHandler(e: any) {
-      console.log(JSON.stringify(e));
-      console.log(e.data);
-      let message = "";
-      if (e.message === "Request failed with status code 401") {
-        // Session timeout.
-        message =
-          "Failed to send request to Classroom API. Please sign-in again";
+      console.log(e);
+      let title: string = "";
+      let message: string = "";
+      let actions: Array<DialogBoxAction> = [];
+      if (
+        typeof e.response !== "undefined" &&
+        typeof e.response.status !== "undefined"
+      ) {
+        console.log(e.response.data);
+        title = "Classroom API Error";
+        switch (e.response.status) {
+          case 401:
+            message = ClassroomApiErrorMessage.invalidOauthAccessToken;
+            break;
+          case 403:
+            message = ClassroomApiErrorMessage.permissionDenined;
+            break;
+          default:
+            message = ClassroomApiErrorMessage.unknownError;
+        }
+        actions.push({
+          buttonContent: {
+            value: "sign-out",
+            isHTML: false,
+          },
+          buttonClass: "md-primary",
+          onClick: async () => {
+            await firebase.auth().signOut();
+            this.$data.dialogBox.dismiss();
+            this.$router.push({ path: "/signIn" });
+          },
+        });
       } else {
+        title = "Database Error";
         message =
-          "An error occurred while getting the data from ClassroomAPI and Database";
+          "An error occurred while getting data from the database. Please reload the page.";
+        actions.push({
+          buttonContent: {
+            value: "dismiss",
+            isHTML: false,
+          },
+          buttonClass: "md-primary",
+          onClick: async () => {
+            this.$data.dialogBox.dismiss();
+          },
+        });
       }
-      this.$data.dialogBox.dismissDialogBox();
-      this.$data.dialogBox.showDialogBox({
+
+      this.$data.dialogBox.dismiss();
+      this.$data.dialogBox.show({
         dialogBoxContent: {
           title: {
-            value: "Error",
+            value: title,
             isHTML: false,
           },
           content: {
@@ -134,21 +173,7 @@ export default Vue.extend({
             isHTML: false,
           },
         },
-        dialogBoxActions: [
-          {
-            buttonContent: {
-              value: "Sign-out",
-              isHTML: false,
-            },
-            buttonClass: "md-primary",
-            onClick: () => {
-              this.$data.dialogBox.dismissDialogBox();
-              this.$router.push({
-                path: "/signIn",
-              });
-            },
-          },
-        ],
+        dialogBoxActions: actions,
       });
     },
   },
