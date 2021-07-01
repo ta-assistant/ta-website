@@ -26,21 +26,41 @@
         <slot></slot>
       </md-app-content>
     </md-app>
-    <dialog-box ref="dialogBox"> </dialog-box>
+    <dialog-box-component
+      :dialogBoxId="'loadingDialogBox'"
+      :isCustomDialogBox="true"
+    >
+      <md-dialog-title>Connecting </md-dialog-title>
+      <md-dialog-content>
+        Grabing the data from Classroom API and Database
+        <md-progress-spinner
+          style="vertical-align: middle; margin-left: 10px"
+          md-mode="indeterminate"
+          :md-diameter="30"
+          :md-stroke="3"
+        ></md-progress-spinner>
+      </md-dialog-content>
+    </dialog-box-component>
+    <dialog-box-component
+      :dialogBoxId="'informDialogBox'"
+      :isCustomDialogBox="false"
+    >
+    </dialog-box-component>
   </div>
 </template>
 
 <script>
 import firebase from "firebase";
-import DialogBox from "@/components/DialogBox/DialogBox.vue";
+import DialogBoxComponent from "@/components/DialogBox/DialogBoxComponent.vue";
+import { DialogBox } from "@/components/DialogBox/DialogBox";
 
 export default {
   name: "Main",
   components: {
-    DialogBox,
+    DialogBoxComponent,
   },
   props: {
-    credentialCheckCallback: {
+    callback: {
       type: Function,
     },
   },
@@ -62,18 +82,8 @@ export default {
     };
   },
   mounted() {
-    this.$refs.dialogBox.show({
-      dialogBoxContent: {
-        title: {
-          value: "Loading",
-          isHTML: false,
-        },
-        content: {
-          value: "Retrieving the data from Classroom API and Database",
-          isHTML: false,
-        },
-      },
-      config: {},
+    const loadingDialog = new DialogBox("loadingDialogBox");
+    loadingDialog.show({
       dialogBoxActions: [],
     });
     firebase.auth().onAuthStateChanged((user) => {
@@ -92,13 +102,13 @@ export default {
         this.$router.push({ path: "/signin" });
         return;
       }
-      if (typeof this.credentialCheckCallback !== "function") {
-        this.$refs.dialogBox.dismiss();
+      if (typeof this.callback !== "function") {
+        loadingDialog.dismiss();
         return;
       }
       console.log(user.uid);
       const credential = this.$session.get("authCredential");
-      this.credentialCheckCallback(user, credential, this.$refs.dialogBox);
+      this.callback(user, credential);
     });
   },
 };
