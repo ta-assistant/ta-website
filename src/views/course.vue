@@ -1,5 +1,5 @@
 <template>
-  <layout :credentialCheckCallback="callbackHandler">
+  <layout :callback="callbackHandler">
     <p class="md-title">Console Page (Course List)</p>
     <div class="menu">
       <md-button class="ml-0 md-primary md-raised"
@@ -36,9 +36,12 @@ import ClassroomAPI from "@/services/ClassroomAPI/classroomApi";
 import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
 import { oauthCredential } from "@/types/Google/oauthCredential";
 import { Course, CourseState } from "@/types/ClassroomAPI/courses";
-import { DialogBox, DialogBoxAction } from "@/types/components/DialogBox";
+import { DialogBoxAction } from "@/types/components/DialogBox";
 import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
 import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
+import { DialogBox } from "@/components/DialogBox/DialogBox";
+const loadingDialogBox = new DialogBox("loadingDialogBox");
+const informDialogBox = new DialogBox("informDialogBox");
 
 export default Vue.extend({
   components: {
@@ -51,19 +54,16 @@ export default Vue.extend({
         displayCoursesList: [],
         fullCoursesList: [],
       },
-      dialogBox: () => {},
     };
   },
   methods: {
     callbackHandler(
       firebaseUser: firebase.User,
-      oauthCredential: oauthCredential,
-      dialogBox: DialogBox
+      oauthCredential: oauthCredential
     ) {
       const firestore = firebase.firestore();
       const classroomApi = new ClassroomAPI(oauthCredential);
       const database = new TaAssistantDb(firestore);
-      this.$set(this, "dialogBox", dialogBox);
       return classroomApi
         .course()
         .list()
@@ -111,7 +111,7 @@ export default Vue.extend({
           }
         }
       );
-      this.$data.dialogBox.dismiss();
+      loadingDialogBox.dismiss();
     },
     promiseErrorHandler(e: any) {
       console.log(e);
@@ -120,7 +120,7 @@ export default Vue.extend({
       let actions: Array<DialogBoxAction> = [];
       const dialogActionButtons = new DialogActionButtons(
         this.$router,
-        this.$data.dialogBox
+        informDialogBox
       );
 
       if (
@@ -147,17 +147,14 @@ export default Vue.extend({
         actions.push(dialogActionButtons.dismissButton());
       }
 
-      this.$data.dialogBox.dismiss();
-      this.$data.dialogBox.show({
+      loadingDialogBox.dismiss({
+        dialogBoxId: "loadingDialogBox",
+      });
+      informDialogBox.show({
+        dialogBoxId: "informDialogBox",
         dialogBoxContent: {
-          title: {
-            value: title,
-            isHTML: false,
-          },
-          content: {
-            value: message,
-            isHTML: false,
-          },
+          title: title,
+          content: message,
         },
         dialogBoxActions: actions,
       });
