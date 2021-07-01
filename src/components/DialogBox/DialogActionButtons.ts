@@ -1,4 +1,5 @@
-import { DialogBox, DialogBoxAction } from "@/types/components/DialogBox";
+import { DialogBoxAction } from "@/types/components/DialogBox";
+import { DialogBox } from "@/components/DialogBox/DialogBox";
 import firebase from "firebase";
 import VueRouter from "vue-router";
 
@@ -15,10 +16,7 @@ export class DialogActionButtons {
 
   signOutButton(): DialogBoxAction {
     return {
-      buttonContent: {
-        value: "sign-out",
-        isHTML: false,
-      },
+      buttonContent: "Sign-out",
       buttonClass: "md-primary",
       onClick: async () => {
         await firebase.auth().signOut();
@@ -33,10 +31,7 @@ export class DialogActionButtons {
       throw Error("The back button required the previousPath");
     }
     return {
-      buttonContent: {
-        value: "Back",
-        isHTML: false,
-      },
+      buttonContent: "Back",
       buttonClass: "md-primary",
       onClick: () => {
         this._dialogBox.dismiss();
@@ -49,10 +44,7 @@ export class DialogActionButtons {
 
   dismissButton(): DialogBoxAction {
     return {
-      buttonContent: {
-        value: "dismiss",
-        isHTML: false,
-      },
+      buttonContent: "Dismiss",
       buttonClass: "md-primary",
       onClick: () => {
         this._dialogBox.dismiss();
