@@ -1,5 +1,5 @@
 <template>
-  <layout :credentialCheckCallback="callbackHandler">
+  <layout :callback="callbackHandler">
     <div class="container">
       <h1 class="md-title text-left">{{ courseName }}</h1>
       <div class="menu">
@@ -40,7 +40,7 @@ import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
 import WorkProgress, { Work } from "../../components/WorkProgress.vue";
 import firebase from "firebase";
-import { DialogBox, DialogBoxAction } from "@/types/components/DialogBox";
+import { DialogBoxAction } from "@/types/components/DialogBox";
 import CreateNewWorkDialog from "@/components/CreateNewWorkDialog.vue";
 import ClassroomApi from "@/services/ClassroomAPI/classroomApi";
 import { oauthCredential } from "@/types/Google/oauthCredential";
@@ -48,6 +48,10 @@ import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
 import { CourseWork } from "@/types/ClassroomAPI/courseWork";
 import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
 import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
+import { DialogBox } from "@/components/DialogBox/DialogBox";
+
+const loadingDialogBox = new DialogBox("loadingDialogBox");
+const informDialogBox = new DialogBox("informDialogBox");
 
 export default Vue.extend({
   components: {
@@ -58,7 +62,6 @@ export default Vue.extend({
   data() {
     return {
       courseName: "Loading . . .",
-      dialogBox: () => {},
       works: {
         fullWorksList: [],
         displaWorksList: [],
@@ -74,13 +77,11 @@ export default Vue.extend({
   methods: {
     callbackHandler(
       firebaseUser: firebase.User,
-      authCredential: oauthCredential,
-      dialogBox: DialogBox
+      authCredential: oauthCredential
     ) {
       const firestore = firebase.firestore();
       const classroomApi = new ClassroomApi(authCredential);
       const database = new TaAssistantDb(firestore);
-      this.$set(this, "dialogBox", dialogBox);
       const courseId: string = this.$route.params.courseId;
       return classroomApi
         .course(courseId)
@@ -128,7 +129,7 @@ export default Vue.extend({
         }
       );
       this.$set(this.works, "displaWorksList", dataToDisplay);
-      this.$data.dialogBox.dismiss();
+      loadingDialogBox.dismiss();
     },
     promiseErrorHandler(e: any) {
       console.log(e);
@@ -137,7 +138,7 @@ export default Vue.extend({
       let actions: Array<DialogBoxAction> = [];
       const dialogActionButtons = new DialogActionButtons(
         this.$router,
-        this.$data.dialogBox,
+        informDialogBox,
         "/course"
       );
       if (
@@ -170,17 +171,11 @@ export default Vue.extend({
         actions.push(dialogActionButtons.dismissButton());
       }
 
-      this.$data.dialogBox.dismiss();
-      this.$data.dialogBox.show({
+      loadingDialogBox.dismiss();
+      informDialogBox.show({
         dialogBoxContent: {
-          title: {
-            value: title,
-            isHTML: false,
-          },
-          content: {
-            value: message,
-            isHTML: false,
-          },
+          title: title,
+          content: message,
         },
         dialogBoxActions: actions,
       });
