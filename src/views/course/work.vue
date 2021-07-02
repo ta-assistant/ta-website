@@ -1,5 +1,5 @@
 <template>
-  <layout :credentialCheckCallback="callbackHandler">
+  <layout :callback="callbackHandler">
     <div class="container">
       <h1 class="md-title">Student Submission</h1>
       <div class="md-layout w-half">
@@ -60,8 +60,14 @@ import Layout from "../../layouts/Main.vue";
 import Comment from "../../components/Comment.vue";
 import CommentEditor from "../../components/CommentEditor.vue";
 import firebase from "firebase";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { DialogBoxAction } from "@/types/components/DialogBox";
+import { DialogBox } from "@/components/DialogBox/DialogBox";
+import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
+import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
+
+const loadingDialogBox = new DialogBox("loadingDialogBox");
+const informDialogBox = new DialogBox("informDialogBox");
 
 export default Vue.extend({
   name: "WorkDetail",
@@ -78,16 +84,10 @@ export default Vue.extend({
       classroomScoreSubmit: false,
       currentComment: "",
       authCredential: {},
-      dialogBox: () => {},
     };
   },
   methods: {
-    callbackHandler(
-      firebaseUser: firebase.User,
-      authCredential: any,
-      dialogBox: any
-    ) {
-      this.$set(this, "dialogBox", dialogBox);
+    callbackHandler(firebaseUser: firebase.User, authCredential: any) {
       const courseId = this.$route.params.courseId;
       const workId = this.$route.params.workId;
       const submissionId = this.$route.params.submissionId;
@@ -119,11 +119,9 @@ export default Vue.extend({
           this.$data.taCliScore = docSnap.data();
           this.$data.classroomScoreSubmit =
             docSnap.data()?.classroomScoreSubmit ?? false;
-          this.$data.dialogBox.dismiss();
+          loadingDialogBox.dismiss();
         })
-        .catch((e) => {
-          return this.promiseErrorHandler(e, courseId, workId);
-        });
+        .catch(this.promiseErrorHandler);
     },
     getSubmissionStateFromClassroomApi(
       courseId: string,
@@ -189,67 +187,56 @@ export default Vue.extend({
         });
     },
 
-    promiseErrorHandler(e: any, courseId: string, workId: string) {
+    promiseErrorHandler(e: AxiosError): void {
       console.log(e);
-      let message = "";
-      let action: Array<DialogBoxAction> = [];
-      if (e.message === "Request failed with status code 401") {
-        // Session timeout.
-        message =
-          "Failed to send request to Classroom API. Please sign-in again";
-        action = [
-          {
-            buttonContent: {
-              value: "Sign-out",
-              isHTML: false,
-            },
-            buttonClass: "md-primary",
-            onClick: () => {
-              this.$data.dialogBox.dismiss();
-              this.$router.push({
-                path: "/signIn",
-              });
-            },
-          },
-        ];
-      } else {
-        action = [
-          {
-            buttonContent: {
-              value: "Back to works",
-              isHTML: false,
-            },
-            buttonClass: "md-primary",
-            onClick: () => {
-              this.$data.dialogBox.dismiss();
-              this.$router.push({
-                path: "/course/" + courseId + "/work/" + workId,
-              });
-            },
-          },
-        ];
-        if (e.message === "Request failed with status code 403") {
-          // User isn't an teacher or have no permission;
-          message =
-            "You don't have permission to access current course's works on Google Classroom.";
-        } else {
-          message =
-            "An error occurred while getting the data from ClassroomAPI and Database";
+      const courseId = this.$route.params.courseId;
+      const workId = this.$route.params.workId;
+
+      let title: string = "";
+      let message: string = "";
+      let actions: Array<DialogBoxAction> = [];
+      const dialogActionButtons = new DialogActionButtons(
+        this.$router,
+        informDialogBox,
+        "/course/" + courseId + "/work/" + workId
+      );
+      if (
+        typeof e.response !== "undefined" &&
+        typeof e.response.status !== "undefined"
+      ) {
+        console.log(e.response.data);
+        title = "Classroom API Error";
+        switch (e.response.status) {
+          case 401:
+            message = ClassroomApiErrorMessage.invalidOauthAccessToken;
+            actions.push(dialogActionButtons.signOutButton());
+            break;
+          case 403:
+            message = ClassroomApiErrorMessage.permissionDenined;
+            actions.push(dialogActionButtons.backButton());
+            break;
+          case 404:
+            message = ClassroomApiErrorMessage.contentNotFound;
+            actions.push(dialogActionButtons.backButton());
+            break;
+          default:
+            message = ClassroomApiErrorMessage.unknownError;
+            actions.push(dialogActionButtons.backButton());
         }
+      } else {
+        title = "Database Error";
+        message =
+          "An error occurred while getting data from the database. Please reload the page.";
+        actions.push(dialogActionButtons.dismissButton());
       }
-      this.$data.dialogBox.dismiss();
-      this.$data.dialogBox.show({
+
+      loadingDialogBox.dismiss();
+      informDialogBox.show({
         dialogBoxContent: {
-          title: {
-            value: "Error",
-            isHTML: false,
-          },
-          content: {
-            value: message,
-            isHTML: false,
-          },
+          title: title,
+          content: message,
         },
-        dialogBoxActions: action,
+        dialogBoxActions: actions,
       });
     },
   },

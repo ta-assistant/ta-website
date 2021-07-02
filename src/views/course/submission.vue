@@ -1,5 +1,5 @@
 <template>
-  <layout :credentialCheckCallback="callbackHandler">
+  <layout :callback="callbackHandler">
     <div class="container">
       <h1 class="md-title">
         {{ work.title }}
@@ -75,14 +75,18 @@
 import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
 import firebase from "firebase";
-import { DialogBox, DialogBoxAction } from "@/types/components/DialogBox";
+import { DialogBoxAction } from "@/types/components/DialogBox";
 import { StudentSubmission } from "@/types/ClassroomAPI/submission";
 import ClassroomApi from "@/services/ClassroomAPI/classroomApi";
 import { oauthCredential } from "@/types/Google/oauthCredential";
 import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
 import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
 import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
+import { DialogBox } from "@/components/DialogBox/DialogBox";
+
+const loadingDialogBox = new DialogBox("loadingDialogBox");
+const informDialogBox = new DialogBox("informDialogBox");
 
 type submissionRow = {
   studentId: string;
@@ -107,7 +111,6 @@ export default Vue.extend({
       work: {
         title: "Loading. . .",
       },
-      dialogBox: () => {},
       submissions: {
         fullSubmissionsList: [],
         displaySubmissionsList: [],
@@ -120,16 +123,15 @@ export default Vue.extend({
   methods: {
     callbackHandler(
       firebaseUser: firebase.User,
-      authCredential: oauthCredential,
-      dialogBox: DialogBox
+      authCredential: oauthCredential
     ) {
       const firestore = firebase.firestore();
-      this.$set(this, "dialogBox", dialogBox);
       const classroomApi = new ClassroomApi(authCredential);
       const database = new TaAssistantDb(firestore);
 
       const courseId = this.$route.params.courseId;
       const workId = this.$route.params.workId;
+
       return classroomApi
         .course(courseId)
         .courseWork(workId)
@@ -169,9 +171,7 @@ export default Vue.extend({
           return database.work(workId).score().list();
         })
         .then(this.setDataToDisplay)
-        .catch((e) => {
-          this.promiseErrorHandler(e, courseId);
-        });
+        .catch(this.promiseErrorHandler);
     },
     setDataToDisplay(querySnapshot: firebase.firestore.QuerySnapshot) {
       const courseId = this.$route.params.courseId;
@@ -217,17 +217,19 @@ export default Vue.extend({
         });
       });
       this.$set(this.submissions, "displaySubmissionsList", dataToDisplay);
-      this.$data.dialogBox.dismiss();
+      loadingDialogBox.dismiss();
     },
-    promiseErrorHandler(e: any, courseId: string) {
+    promiseErrorHandler(e: AxiosError) {
       console.log(e);
+      const courseId = this.$route.params.courseId;
+
       let title: string = "";
       let message: string = "";
       let actions: Array<DialogBoxAction> = [];
       const dialogActionButtons = new DialogActionButtons(
         this.$router,
-        this.$data.dialogBox,
-        "/course"
+        informDialogBox,
+        "/course/" + courseId
       );
       if (
         typeof e.response !== "undefined" &&
@@ -259,17 +261,11 @@ export default Vue.extend({
         actions.push(dialogActionButtons.dismissButton());
       }
 
-      this.$data.dialogBox.dismiss();
-      this.$data.dialogBox.show({
+      loadingDialogBox.dismiss();
+      informDialogBox.show({
         dialogBoxContent: {
-          title: {
-            value: title,
-            isHTML: false,
-          },
-          content: {
-            value: message,
-            isHTML: false,
-          },
+          title: title,
+          content: message,
         },
         dialogBoxActions: actions,
       });
