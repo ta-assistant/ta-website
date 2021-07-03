@@ -37,10 +37,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { DialogConfig } from "@/types/components/DialogBox";
-import DialogBoxEventBus, {
-  DialogEvent,
-  DialogEventResponse,
-} from "./DialogBoxEventBus";
+import DialogBoxEventBus, { DialogEvent } from "./DialogBoxEventBus";
 
 export default Vue.extend({
   name: "DialogBoxComponent",

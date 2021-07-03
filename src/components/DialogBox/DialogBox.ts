@@ -14,7 +14,6 @@ export class DialogBox {
     dialogConfig = this._checkDialogBoxId(dialogConfig ?? {});
     dialogConfig = this._parseDialogConfig(dialogConfig);
     const responseChannelId = `RESPONSE-${dialogConfig.dialogBoxId}`;
-    console.log(JSON.stringify(dialogConfig));
     DialogBoxEventBus.$emit(DialogEvent.show, dialogConfig);
     this._listenResponse(responseChannelId);
   }
