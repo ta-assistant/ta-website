@@ -75,15 +75,16 @@
 import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
 import firebase from "firebase";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import ClassroomApi from "@/services/ClassroomAPI/classroomApi";
+import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
+import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
+import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
+import { DialogBox } from "@/components/DialogBox/DialogBox";
 import { DialogBoxAction } from "@/types/components/DialogBox";
 import { StudentSubmission } from "@/types/ClassroomAPI/submission";
-import ClassroomApi from "@/services/ClassroomAPI/classroomApi";
 import { oauthCredential } from "@/types/Google/oauthCredential";
-import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
-import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
-import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
-import { AxiosError, AxiosResponse } from "axios";
-import { DialogBox } from "@/components/DialogBox/DialogBox";
+import { TaScoreData } from "@/types/TA/ScoreData";
 
 const loadingDialogBox = new DialogBox("loadingDialogBox");
 const informDialogBox = new DialogBox("informDialogBox");
@@ -91,15 +92,15 @@ const informDialogBox = new DialogBox("informDialogBox");
 type submissionRow = {
   studentId: string;
   state: string;
-  taCliScore: AnyJsonObj;
+  taScore: TaScoreData;
   classroomScoreSubmit: boolean;
   submissionDetailUrl: string;
   isValidUserId: boolean;
 };
 
-interface AnyJsonObj {
+type AnyJsonObj = {
   [key: string]: any;
-}
+};
 
 export default Vue.extend({
   name: "WorkSubmission",
@@ -190,14 +191,14 @@ export default Vue.extend({
       studentSubmissions.forEach((submission) => {
         let studentId = userIdToStudentIdJson[submission.userId];
         let isValidUserId: boolean = true;
-        let taCliScore: AnyJsonObj = {};
         let classroomScoreSubmit: boolean = false;
+        let taScore: TaScoreData = {};
         if (typeof userIdToStudentIdJson[submission.userId] === "undefined") {
           studentId = "[StudentId Not found] " + submission.userId;
           isValidUserId = false;
         }
         if (typeof studentIdToTaCliScore[studentId] !== "undefined") {
-          taCliScore = studentIdToTaCliScore[studentId];
+          taScore = studentIdToTaCliScore[studentId] as TaScoreData;
           classroomScoreSubmit =
             studentIdToTaCliScore[studentId].classroomScoreSubmit ?? false;
         }
@@ -205,7 +206,7 @@ export default Vue.extend({
           studentId: studentId,
           isValidUserId: isValidUserId,
           state: submission.state,
-          taCliScore: taCliScore,
+          taScore: taScore,
           classroomScoreSubmit: classroomScoreSubmit,
           submissionDetailUrl:
             "/course/" +
@@ -219,7 +220,7 @@ export default Vue.extend({
       this.$set(this.submissions, "displaySubmissionsList", dataToDisplay);
       loadingDialogBox.dismiss();
     },
-    promiseErrorHandler(e: AxiosError) {
+    promiseErrorHandler(e: AxiosError | firebase.firestore.FirestoreError) {
       console.log(e);
       const courseId = this.$route.params.courseId;
 
@@ -231,13 +232,10 @@ export default Vue.extend({
         informDialogBox,
         "/course/" + courseId
       );
-      if (
-        typeof e.response !== "undefined" &&
-        typeof e.response.status !== "undefined"
-      ) {
-        console.log(e.response.data);
+      if (axios.isAxiosError(e)) {
+        console.log(e.response?.data);
         title = "Classroom API Error";
-        switch (e.response.status) {
+        switch (e.response?.status) {
           case 401:
             message = ClassroomApiErrorMessage.invalidOauthAccessToken;
             actions.push(dialogActionButtons.signOutButton());

@@ -49,6 +49,7 @@ import { CourseWork } from "@/types/ClassroomAPI/courseWork";
 import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
 import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
 import { DialogBox } from "@/components/DialogBox/DialogBox";
+import { AxiosError, AxiosResponse } from "axios";
 
 const loadingDialogBox = new DialogBox("loadingDialogBox");
 const informDialogBox = new DialogBox("informDialogBox");
@@ -97,7 +98,7 @@ export default Vue.extend({
         .then(this.setDataToDisplay)
         .catch(this.promiseErrorHandler);
     },
-    getWorksFromDatabase(res: any, database: TaAssistantDb) {
+    getWorksFromDatabase(res: AxiosResponse, database: TaAssistantDb) {
       const promises: Array<Promise<firebase.firestore.DocumentSnapshot>> = [];
       const courseWork: CourseWork = res.data.courseWork;
       this.$set(this.works, "fullWorksList", courseWork);
@@ -131,7 +132,7 @@ export default Vue.extend({
       this.$set(this.works, "displaWorksList", dataToDisplay);
       loadingDialogBox.dismiss();
     },
-    promiseErrorHandler(e: any) {
+    promiseErrorHandler(e: AxiosError) {
       console.log(e);
       let title: string = "";
       let message: string = "";
