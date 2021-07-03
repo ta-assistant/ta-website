@@ -5,11 +5,11 @@
       <div class="md-layout w-half">
         <div class="md-layout-item md-size-30">Student ID</div>
         <div class="md-layout-item md-size-70">
-          {{ studentId }}
+          {{ studentInfo.studentId }}
         </div>
         <div class="md-layout-item md-size-30">State</div>
         <div class="md-layout-item md-size-70">
-          {{ state }}
+          {{ submission.fullSubmissionData.state }}
         </div>
         <div class="md-layout-item md-size-30">TA-CLI Score</div>
         <div class="md-layout-item md-size-70">
@@ -55,16 +55,20 @@
 </template>
 
 <script lang="ts">
+import axios, { AxiosError, AxiosResponse } from "axios";
+import { DialogBoxAction } from "@/types/components/DialogBox";
+import { DialogBox } from "@/components/DialogBox/DialogBox";
+import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
+import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
+import { oauthCredential } from "@/types/Google/oauthCredential";
+import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
+import { StudentSubmission } from "@/types/ClassroomAPI/submission";
 import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
 import Comment from "../../components/Comment.vue";
 import CommentEditor from "../../components/CommentEditor.vue";
 import firebase from "firebase";
-import axios, { AxiosError } from "axios";
-import { DialogBoxAction } from "@/types/components/DialogBox";
-import { DialogBox } from "@/components/DialogBox/DialogBox";
-import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
-import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
+import ClassroomApi from "@/services/ClassroomAPI/classroomApi";
 
 const loadingDialogBox = new DialogBox("loadingDialogBox");
 const informDialogBox = new DialogBox("informDialogBox");
@@ -78,39 +82,57 @@ export default Vue.extend({
   },
   data: () => {
     return {
-      studentId: "",
-      state: "",
       taCliScore: {},
       classroomScoreSubmit: false,
       currentComment: "",
-      authCredential: {},
+      submission: {
+        fullSubmissionData: {} as StudentSubmission,
+        scoreFromDatabase: {},
+      },
+      studentInfo: {},
     };
   },
   methods: {
-    callbackHandler(firebaseUser: firebase.User, authCredential: any) {
+    callbackHandler(
+      firebaseUser: firebase.User,
+      oauthCredential: oauthCredential
+    ) {
       const courseId = this.$route.params.courseId;
       const workId = this.$route.params.workId;
       const submissionId = this.$route.params.submissionId;
-      let classroomUserId = "";
-      let studentId = "";
-      this.$set(this, "authCredential", authCredential);
       const firestore = firebase.firestore();
-      return this.getSubmissionStateFromClassroomApi(
-        courseId,
-        workId,
-        submissionId,
-        authCredential.credential
-      )
-        .then((res) => {
-          classroomUserId = res.data.userId;
-          this.$data.state = res.data.state;
-          return this.getUserFromDatabase(courseId, classroomUserId, firestore);
+
+      const classroomApi = new ClassroomApi(oauthCredential);
+      const database = new TaAssistantDb(firestore);
+
+      return classroomApi
+        .course(courseId)
+        .courseWork(workId)
+        .studentSubmission(submissionId)
+        .get()
+        .then((res: AxiosResponse) => {
+          this.$set(this.submission, "fullSubmissionData", res.data);
+          return database
+            .classroom(this.submission.fullSubmissionData.courseId)
+            .student()
+            .search({
+              classroomUserId: this.submission.fullSubmissionData.userId,
+            });
         })
         .then((queryResult) => {
-          console.log(queryResult.docs[0].data());
-          studentId = queryResult.docs[0].data().studentId;
-          this.$data.studentId = studentId;
-          return this.getScoreFromDatabase(workId, studentId, firestore);
+          if (queryResult.size !== 1) {
+            console.log(queryResult);
+            throw Error(
+              `classroomUserId not found or found more than 1 (Found ${queryResult.size})`
+            );
+          }
+
+          this.$set(this, "studentInfo", queryResult.docs[0].data());
+          this.$set(this.studentInfo, "userId", queryResult.docs[0].id);
+          return database
+            .work(workId)
+            .score(this.$data.studentInfo.studentId)
+            .get();
         })
         .then((docSnap) => {
           if (!docSnap.exists) {
@@ -123,71 +145,10 @@ export default Vue.extend({
         })
         .catch(this.promiseErrorHandler);
     },
-    getSubmissionStateFromClassroomApi(
-      courseId: string,
-      workId: string,
-      submissionId: string,
-      credential: any
-    ) {
-      return axios({
-        method: "GET",
-        url: `https://classroom.googleapis.com/v1/courses/${courseId}/courseWork/${workId}/studentSubmissions/${submissionId}`,
-        headers: {
-          Authorization: "Bearer " + credential.oauthAccessToken,
-        },
-      });
-    },
-    getUserFromDatabase(
-      courseId: string,
-      classroomUserId: string,
-      firestore: firebase.firestore.Firestore
-    ) {
-      return firestore
-        .collection("Classrooms")
-        .doc(courseId)
-        .collection("students")
-        .where("classroomUserId", "==", classroomUserId)
-        .get();
-    },
-    getScoreFromDatabase(
-      workId: string,
-      studentId: string,
-      firestore: firebase.firestore.Firestore
-    ) {
-      return firestore
-        .collection("Works")
-        .doc(workId)
-        .collection("scores")
-        .doc(studentId)
-        .get();
-    },
 
-    submitScoreToClassroom() {
-      const courseId = this.$route.params.courseId;
-      const workId = this.$route.params.workId;
-      const submissionId = this.$route.params.submissionId;
-      console.log(this.$data.authCredential.credential.oauthAccessToken);
-      return axios({
-        method: "PATCH",
-        url: `https://classroom.googleapis.com/v1/courses/${courseId}/courseWork/${workId}/studentSubmissions/${submissionId}`,
-        headers: {
-          Authorization:
-            "Bearer " + this.$data.authCredential.credential.oauthAccessToken,
-        },
-        params: {
-          updateMask: "assignedGrade:100",
-        },
-      })
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((e) => {
-          console.log("Error");
-          console.log(e);
-        });
-    },
-
-    promiseErrorHandler(e: AxiosError): void {
+    promiseErrorHandler(
+      e: AxiosError | firebase.firestore.FirestoreError
+    ): void {
       console.log(e);
       const courseId = this.$route.params.courseId;
       const workId = this.$route.params.workId;
@@ -200,13 +161,10 @@ export default Vue.extend({
         informDialogBox,
         "/course/" + courseId + "/work/" + workId
       );
-      if (
-        typeof e.response !== "undefined" &&
-        typeof e.response.status !== "undefined"
-      ) {
-        console.log(e.response.data);
+      if (axios.isAxiosError(e)) {
+        console.log(e.response?.data);
         title = "Classroom API Error";
-        switch (e.response.status) {
+        switch (e.response?.status) {
           case 401:
             message = ClassroomApiErrorMessage.invalidOauthAccessToken;
             actions.push(dialogActionButtons.signOutButton());
@@ -225,9 +183,14 @@ export default Vue.extend({
         }
       } else {
         title = "Database Error";
-        message =
-          "An error occurred while getting data from the database. Please reload the page.";
-        actions.push(dialogActionButtons.dismissButton());
+        if (e.message === "No score data found in Database") {
+          message = "The score data was not found in database.";
+          actions.push(dialogActionButtons.backButton());
+        } else {
+          message =
+            "An error occurred while getting data from the database. Please reload the page.";
+          actions.push(dialogActionButtons.dismissButton());
+        }
       }
 
       loadingDialogBox.dismiss();
