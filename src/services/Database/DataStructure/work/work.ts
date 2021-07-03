@@ -10,11 +10,11 @@ export class Work extends Database {
     this.workId = workId ?? null;
   }
 
-  score(studetnId?: string): Score {
+  score(studentId?: string): Score {
     if (this.workId === null) {
       throw Error("To get score. workId must be specified");
     }
-    return new Score(this.getFirestore(), this.workId, studetnId);
+    return new Score(this.getFirestore(), this.workId, studentId);
   }
 
   get(): Promise<firebase.firestore.DocumentSnapshot> {
