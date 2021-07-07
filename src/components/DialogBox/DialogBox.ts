@@ -10,7 +10,7 @@ export class DialogBox {
     this._dialogBoxId = dialogBoxId;
   }
 
-  show(dialogConfig: DialogConfig): void {
+  show(dialogConfig?: DialogConfig): void {
     dialogConfig = this._checkDialogBoxId(dialogConfig ?? {});
     dialogConfig = this._parseDialogConfig(dialogConfig);
     const responseChannelId = `RESPONSE-${dialogConfig.dialogBoxId}`;

@@ -26,47 +26,10 @@
         </div>
         <div class="submenu"></div>
       </div>
-      <div v-if="submissions.length !== 0">
-        <md-table>
-          <md-table-row>
-            <md-table-head>Student ID</md-table-head>
-            <md-table-head>State</md-table-head>
-            <md-table-head>TA-CLI Score</md-table-head>
-            <md-table-head>Google Classroom score submit</md-table-head>
-            <md-table-head>Actions</md-table-head>
-          </md-table-row>
-          <md-table-row
-            v-for="submission in submissions.displaySubmissionsList"
-            :key="submission.studentId"
-          >
-            <md-table-cell>{{ submission.studentId }}</md-table-cell>
-            <md-table-cell>{{ submission.state }}</md-table-cell>
-            <md-table-cell>{{ submission.taCliScore }}</md-table-cell>
-            <md-table-cell>
-              <md-icon v-if="submission.classroomScoreSubmit">done</md-icon>
-              <md-icon v-else>close </md-icon>
-            </md-table-cell>
-            <md-table-cell>
-              <router-link :to="submission.submissionDetailUrl">
-                <md-button
-                  class="md-raised md-primary"
-                  v-if="submission.isValidUserId"
-                  >View</md-button
-                >
-              </router-link>
-            </md-table-cell>
-          </md-table-row>
-        </md-table>
-      </div>
-      <div v-else>
-        <md-empty-state
-          md-rounded
-          md-icon="assignment"
-          md-label="No one was assigned in this work"
-          md-description="Check it in the Google Classroom"
-        >
-        </md-empty-state>
-      </div>
+      <submission-table
+        :submissions="submissions.displaySubmissionsList"
+        :isSupportTaFunction="work.associatedWithDeveloper"
+      />
     </div>
   </layout>
 </template>
@@ -81,6 +44,9 @@ import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
 import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
 import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
 import { DialogBox } from "@/components/DialogBox/DialogBox";
+import SubmissionTable, {
+  SubmissionRow,
+} from "@/components/SubmissionTable.vue";
 import { DialogBoxAction } from "@/types/components/DialogBox";
 import { StudentSubmission } from "@/types/ClassroomAPI/submission";
 import { oauthCredential } from "@/types/Google/oauthCredential";
@@ -88,15 +54,6 @@ import { TaScoreData } from "@/types/TA/ScoreData";
 
 const loadingDialogBox = new DialogBox("loadingDialogBox");
 const informDialogBox = new DialogBox("informDialogBox");
-
-type submissionRow = {
-  studentId: string;
-  state: string;
-  taScore: TaScoreData;
-  classroomScoreSubmit: boolean;
-  submissionDetailUrl: string;
-  isValidUserId: boolean;
-};
 
 type AnyJsonObj = {
   [key: string]: any;
@@ -106,11 +63,13 @@ export default Vue.extend({
   name: "WorkSubmission",
   components: {
     Layout,
+    SubmissionTable,
   },
   data() {
     return {
       work: {
         title: "Loading. . .",
+        associatedWithDeveloper: false,
       },
       submissions: {
         fullSubmissionsList: [],
@@ -139,8 +98,13 @@ export default Vue.extend({
         .get()
         .then((res: AxiosResponse) => {
           // Set the work name
-          this.$data.work = res.data;
+          this.$set(this, "work", res.data);
           this.$data.work.title += " Submission";
+          this.$set(
+            this.work,
+            "associatedWithDeveloper",
+            this.$data.work.associatedWithDeveloper ?? false
+          );
           return classroomApi
             .course(courseId)
             .courseWork(workId)
@@ -187,7 +151,7 @@ export default Vue.extend({
         studentIdToTaCliScore[doc.id] = doc.data();
       });
 
-      const dataToDisplay: Array<submissionRow> = [];
+      const dataToDisplay: Array<SubmissionRow> = [];
       studentSubmissions.forEach((submission) => {
         let studentId = userIdToStudentIdJson[submission.userId];
         let isValidUserId: boolean = true;
