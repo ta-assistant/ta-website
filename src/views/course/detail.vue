@@ -104,9 +104,9 @@ export default Vue.extend({
     },
     getWorksFromDatabase(res: AxiosResponse, database: TaAssistantDb) {
       const promises: Array<Promise<firebase.firestore.DocumentSnapshot>> = [];
-      const courseWork: CourseWork = res.data.courseWork;
+      const courseWork: Array<CourseWork> = res.data.courseWork ?? [];
       this.$set(this.works, "fullWorksList", courseWork);
-      res.data.courseWork.forEach((courseWork: CourseWork) => {
+      courseWork.forEach((courseWork: CourseWork) => {
         promises.push(database.work(courseWork.id).get());
       });
       return Promise.all(promises);

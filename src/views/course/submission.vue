@@ -117,7 +117,7 @@ export default Vue.extend({
           this.$set(
             this.submissions,
             "fullSubmissionsList",
-            studentSubmissions
+            studentSubmissions ?? []
           );
           return database.classroom(courseId).student().list();
         })
