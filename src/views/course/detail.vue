@@ -10,10 +10,6 @@
           <md-icon>add</md-icon>
           New Work
         </md-button>
-        <md-button class="md-primary md-raised">
-          <md-icon>campaign</md-icon>
-          New Announcement
-        </md-button>
       </div>
       <div class="work-list" v-if="works.displaWorksList.length !== 0">
         <work-progress
