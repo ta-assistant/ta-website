@@ -43,9 +43,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
-import WorkProgress, {
-  Work,
-} from "../../components/DetailViewComponents/WorkProgress.vue";
+import WorkProgress from "../../components/DetailViewComponents/WorkProgress.vue";
 import firebase from "firebase";
 import { DialogBoxAction } from "@/types/components/DialogBox";
 import ClassroomApi from "@/services/ClassroomAPI/classroomApi";
@@ -121,19 +119,13 @@ export default Vue.extend({
       promisesResult: Array<firebase.firestore.DocumentSnapshot>
     ) {
       const courseWork: Array<CourseWork> = this.$data.works.fullWorksList;
-      const dataToDisplay: Array<Work> = [];
+      const dataToDisplay: Array<CourseWork> = [];
       const unlinkedWork: Array<CourseWork> = [];
       promisesResult.forEach(
         (doc: firebase.firestore.DocumentData, index: number) => {
           const work = courseWork[index];
           if (doc.exists) {
-            dataToDisplay.push({
-              name: work.title ?? "Unknown",
-              progress: 50,
-              link: "/course/" + work.courseId + "/work/" + work.id,
-              classroomUrl: work.alternateLink ?? "Unknown",
-              associatedWithDeveloper: work.associatedWithDeveloper ?? false,
-            });
+            dataToDisplay.push(work);
           } else {
             unlinkedWork.push(work);
           }
