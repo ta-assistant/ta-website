@@ -3,7 +3,7 @@ import { AxiosPromise } from "axios";
 import { api } from "./api";
 import { CourseWorkManager } from "./courseWork";
 
-export class Course extends api {
+export class CourseManager extends api {
   courseId: string | null;
   /**
    *
@@ -44,10 +44,14 @@ export class Course extends api {
    * List all courses;
    * @returns AxiosPromises
    */
-  list(): AxiosPromise {
+  list(teacherId?: string): AxiosPromise {
+    let url = "https://classroom.googleapis.com/v1/courses?";
+    if (typeof teacherId !== "undefined") {
+      url += `teacherId=${teacherId}`;
+    }
     return this.sendRequest({
       method: "GET",
-      url: "https://classroom.googleapis.com/v1/courses/",
+      url: url,
     });
   }
 }
