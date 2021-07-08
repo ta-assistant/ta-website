@@ -1,9 +1,10 @@
+import { CourseWork, CourseWorkState } from "@/types/ClassroomAPI/courseWork";
 import { oauthCredential } from "@/types/Google/oauthCredential";
 import { AxiosPromise } from "axios";
 import { api } from "./api";
 import { StudentSubmission } from "./studentSubmission";
 
-export class CourseWork extends api {
+export class CourseWorkManager extends api {
   courseId: string;
   courseWorkId: string | null;
 
@@ -38,15 +39,36 @@ export class CourseWork extends api {
   }
 
   /**
-   * Get the all courseWork info.
+   * Create the new course work in classroom api
+   * @param config Pass the CourseWork config to create the work
+   * @returns Axios Promises
    */
-  list(): AxiosPromise {
+  create(config: CourseWork): AxiosPromise {
     return this.sendRequest({
-      method: "GET",
+      method: "POST",
       url:
         "https://classroom.googleapis.com/v1/courses/" +
         this.courseId +
         "/courseWork",
+      data: config,
+    });
+  }
+
+  /**
+   * Get the all courseWork info.
+   */
+  list(coursWorkStates: Array<CourseWorkState> = []): AxiosPromise {
+    let url: string =
+      "https://classroom.googleapis.com/v1/courses/" +
+      this.courseId +
+      "/courseWork?";
+
+    coursWorkStates.forEach((element: CourseWorkState) => {
+      url += `courseWorkStates=${element}&`;
+    });
+    return this.sendRequest({
+      method: "GET",
+      url: url,
     });
   }
 

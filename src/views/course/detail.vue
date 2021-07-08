@@ -5,14 +5,10 @@
       <div class="menu">
         <md-button
           class="md-primary md-raised"
-          @click="createNewWorkDialog.active = true"
+          @click="showCreateNewWorkDialog"
         >
           <md-icon>add</md-icon>
           New Work
-        </md-button>
-        <md-button class="md-primary md-raised">
-          <md-icon>campaign</md-icon>
-          New Announcement
         </md-button>
       </div>
       <div class="work-list" v-if="works.displaWorksList.length !== 0">
@@ -32,54 +28,59 @@
         </md-empty-state>
       </div>
     </div>
+    <create-work-dialog
+      :unlinkedWork="works.unlinkedWork"
+      :classroomCourse="getClassroomCourseInstance()"
+      :refreshDataFunction="refreshPageData"
+    />
   </layout>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Layout from "../../layouts/Main.vue";
-import WorkProgress, { Work } from "../../components/WorkProgress.vue";
+import WorkProgress from "../../components/DetailViewComponents/WorkProgress.vue";
 import firebase from "firebase";
 import { DialogBoxAction } from "@/types/components/DialogBox";
-import CreateNewWorkDialog from "@/components/CreateNewWorkDialog.vue";
 import ClassroomApi from "@/services/ClassroomAPI/classroomApi";
 import { oauthCredential } from "@/types/Google/oauthCredential";
 import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
-import { CourseWork } from "@/types/ClassroomAPI/courseWork";
+import { CourseWork, CourseWorkState } from "@/types/ClassroomAPI/courseWork";
 import { ClassroomApiErrorMessage } from "@/services/ClassroomAPI/errorMessages";
 import { DialogActionButtons } from "@/components/DialogBox/DialogActionButtons";
 import { DialogBox } from "@/components/DialogBox/DialogBox";
+import CreateWorkDialog from "@/components/DetailViewComponents/CreateWorkDialog.vue";
 import { AxiosError, AxiosResponse } from "axios";
+import { Course } from "@/types/ClassroomAPI/courses";
 
 const loadingDialogBox = new DialogBox("loadingDialogBox");
 const informDialogBox = new DialogBox("informDialogBox");
+const createWorkDialog = new DialogBox("createNewWorkDialog");
 
 export default Vue.extend({
   components: {
     Layout,
     WorkProgress,
-    CreateNewWorkDialog,
+    CreateWorkDialog,
   },
   data() {
     return {
       courseName: "Loading . . .",
       works: {
-        fullWorksList: [],
-        displaWorksList: [],
-        unlinkedWork: [],
+        fullWorksList: [] as Array<CourseWork>,
+        displaWorksList: [] as Array<CourseWork>,
+        unlinkedWork: [] as Array<CourseWork>,
       },
-
-      createNewWorkDialog: {
-        active: false,
-      },
+      authCredential: {} as oauthCredential,
     };
   },
 
   methods: {
     callbackHandler(
-      firebaseUser: firebase.User,
+      firebaseUser: firebase.User | null,
       authCredential: oauthCredential
     ) {
+      this.$set(this, "authCredential", authCredential);
       const firestore = firebase.firestore();
       const classroomApi = new ClassroomApi(authCredential);
       const database = new TaAssistantDb(firestore);
@@ -90,7 +91,10 @@ export default Vue.extend({
         .then((res) => {
           // Set CourseName
           this.courseName = res.data.name;
-          return classroomApi.course(courseId).courseWork().list();
+          return classroomApi
+            .course(courseId)
+            .courseWork()
+            .list([CourseWorkState.published, CourseWorkState.draft]);
         })
         .then((res) => {
           return this.getWorksFromDatabase(res, database);
@@ -111,26 +115,27 @@ export default Vue.extend({
       promisesResult: Array<firebase.firestore.DocumentSnapshot>
     ) {
       const courseWork: Array<CourseWork> = this.$data.works.fullWorksList;
-      const dataToDisplay: Array<Work> = [];
-
+      const dataToDisplay: Array<CourseWork> = [];
+      const unlinkedWork: Array<CourseWork> = [];
       promisesResult.forEach(
         (doc: firebase.firestore.DocumentData, index: number) => {
           const work = courseWork[index];
           if (doc.exists) {
-            dataToDisplay.push({
-              name: work.title,
-              progress: 50,
-              link: "/course/" + work.courseId + "/work/" + work.id,
-              classroomUrl: work.alternateLink,
-              associatedWithDeveloper: work.associatedWithDeveloper,
-            });
+            dataToDisplay.push(work);
           } else {
-            this.$data.works.unlinkedWork.push(work);
+            unlinkedWork.push(work);
           }
         }
       );
+      this.$set(this.works, "unlinkedWork", unlinkedWork);
       this.$set(this.works, "displaWorksList", dataToDisplay);
       loadingDialogBox.dismiss();
+    },
+    refreshPageData(): Promise<void> {
+      return this.callbackHandler(
+        firebase.auth().currentUser ?? null,
+        this.authCredential
+      );
     },
     promiseErrorHandler(e: AxiosError) {
       console.log(e);
@@ -179,6 +184,19 @@ export default Vue.extend({
           content: message,
         },
         dialogBoxActions: actions,
+      });
+    },
+    getClassroomCourseInstance() {
+      const courseId: string = this.$route.params.courseId;
+      return new ClassroomApi(this.authCredential).course(courseId);
+    },
+    showCreateNewWorkDialog() {
+      this.refreshPageData();
+      createWorkDialog.show({
+        config: {
+          clickOutsideToClose: true,
+        },
+        dialogBoxActions: [],
       });
     },
   },

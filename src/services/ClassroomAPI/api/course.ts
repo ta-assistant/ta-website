@@ -1,7 +1,7 @@
 import { oauthCredential } from "@/types/Google/oauthCredential";
 import { AxiosPromise } from "axios";
 import { api } from "./api";
-import { CourseWork } from "./courseWork";
+import { CourseWorkManager } from "./courseWork";
 
 export class Course extends api {
   courseId: string | null;
@@ -15,11 +15,15 @@ export class Course extends api {
     this.courseId = courseId ?? null;
   }
 
-  courseWork(workId?: string): CourseWork {
+  courseWork(workId?: string): CourseWorkManager {
     if (this.courseId === null) {
       throw Error("To access courseWork. You must specify the courseId");
     }
-    return new CourseWork(this.getOAuthCredential(), this.courseId, workId);
+    return new CourseWorkManager(
+      this.getOAuthCredential(),
+      this.courseId,
+      workId
+    );
   }
 
   /**

@@ -17,6 +17,12 @@ export class Work extends Database {
     return new Score(this.getFirestore(), this.workId, studentId);
   }
 
+  create(classroomId: string, workId: string): Promise<void> {
+    return this.getFirestore().collection("Works").doc(workId).set({
+      classroomId: classroomId,
+    });
+  }
+
   get(): Promise<firebase.firestore.DocumentSnapshot> {
     if (this.workId === null) {
       throw Error("To get work. workId must be specified");

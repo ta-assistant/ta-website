@@ -8,43 +8,47 @@
           functionality</md-tooltip
         ></md-icon
       >
-      {{ work.name }}
+      {{ work.title }}
     </p>
-    <md-progress-bar
-      class="md-layout-item md-large-size-40 md-small-size-100"
-      :md-value="work.progress"
-    ></md-progress-bar>
-    <div class="md-layout-item md-large-size-30 md-small-size-100">
-      <router-link :to="work.link">
+    <div class="work md-layout-item md-large-size-40 md-small-size-100">
+      ID: {{ work.id }} , State: {{ work.state }}
+    </div>
+    <div
+      class="md-layout-item md-large-size-30 md-small-size-100"
+      v-if="work.state !== 'DRAFT'"
+    >
+      <router-link :to="`/course/${work.courseId}/work/${work.id}`">
         <md-button class="md-primary md-raised">View Work</md-button>
       </router-link>
       <md-button
         class="md-primary md-raised"
-        @click="openUrl(work.classroomUrl)"
+        @click="openUrl(work.alternateLink)"
+        v-if="!isUndefined(work.alternateLink)"
         >View in Google Classroom</md-button
       >
+    </div>
+    <div class="work md-layout-item md-large-size-30 md-small-size-100" v-else>
+      -- No action --
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { CourseWork } from "@/types/ClassroomAPI/courseWork";
 import Vue, { PropType } from "vue";
-export type Work = {
-  name: string;
-  progress: number;
-  link: string;
-  classroomUrl: string;
-  associatedWithDeveloper: boolean;
-};
+
 export default Vue.extend({
   name: "WorkProgress",
   props: {
     work: {
-      type: Object as PropType<Work>,
+      type: Object as PropType<CourseWork>,
       required: true,
     },
   },
   methods: {
+    isUndefined(data: any) {
+      return typeof data === "undefined";
+    },
     openUrl(url: string) {
       window.open(url, "_blank");
     },
