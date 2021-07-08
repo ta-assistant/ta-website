@@ -115,7 +115,7 @@ import { DialogBox } from "@/components/DialogBox/DialogBox";
 import DialogBoxComponent from "@/components/DialogBox/DialogBoxComponent.vue";
 import Vue from "vue";
 import { PropType } from "vue/types/umd";
-import { Course } from "@/services/ClassroomAPI/api/course";
+import { CourseManager } from "@/services/ClassroomAPI/api/course";
 import { AxiosResponse } from "axios";
 import firebase from "firebase";
 import { TaAssistantDb } from "@/services/Database/TaAssistantDb";
@@ -134,7 +134,7 @@ export default Vue.extend({
       required: true,
     },
     classroomCourse: {
-      type: Object as PropType<Course>,
+      type: Object as PropType<CourseManager>,
       required: true,
     },
     refreshDataFunction: {
