@@ -1,3 +1,4 @@
+/* eslint-disable */
 export type CourseWork = {
   courseId?: string;
   id?: string;
