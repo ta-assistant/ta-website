@@ -2,6 +2,7 @@ import { Database } from "../database";
 import firebase from "firebase";
 import { Teacher } from "./teacher";
 import { Student } from "./student";
+import { Course } from "@/types/ClassroomAPI/courses";
 
 export class Classroom extends Database {
   classroomId: string | null;
@@ -23,6 +24,30 @@ export class Classroom extends Database {
       throw Error("To get the teacher info. The classroomId is needed");
     }
     return new Student(this.getFirestore(), this.classroomId);
+  }
+
+  async create(course: Course, firebaseUserId: string): Promise<void> {
+    const classroomCheckInstance = await this.getFirestore()
+      .collection("Classrooms")
+      .doc(course.id)
+      .get();
+    if (classroomCheckInstance.exists) {
+      throw Error("This class has already been created.");
+    }
+    await this.getFirestore().collection("Classrooms").doc(course.id).set({
+      name: course.name,
+      ownerId: course.ownerId,
+      courseState: course.courseState,
+      linkTimestamp: Date.now(),
+      linkBy: firebaseUserId,
+    });
+    await this.getFirestore()
+      .collection("Classrooms")
+      .doc(course.id)
+      .collection("teachers")
+      .doc(firebaseUserId)
+      .set({});
+    return;
   }
 
   /**
