@@ -112,12 +112,9 @@ export default Vue.extend({
         .get()
         .then((res: AxiosResponse) => {
           this.$set(this.submission, "fullSubmissionData", res.data);
-          return database
-            .classroom(this.submission.fullSubmissionData.courseId)
-            .student()
-            .search({
-              classroomUserId: this.submission.fullSubmissionData.userId,
-            });
+          return database.users().search({
+            classroomUserId: this.submission.fullSubmissionData.userId,
+          });
         })
         .then((queryResult) => {
           if (queryResult.size !== 1) {
