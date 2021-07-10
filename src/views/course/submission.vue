@@ -113,20 +113,33 @@ export default Vue.extend({
         })
         .then((res: AxiosResponse) => {
           const studentSubmissions: Array<StudentSubmission> =
-            res.data.studentSubmissions;
+            res.data.studentSubmissions ?? [];
           this.$set(
             this.submissions,
             "fullSubmissionsList",
-            studentSubmissions ?? []
+            studentSubmissions
           );
-          return database.classroom(courseId).student().list();
+          const promisesArray: Array<
+            Promise<firebase.firestore.QuerySnapshot>
+          > = [];
+          studentSubmissions.forEach((submission: StudentSubmission) => {
+            promisesArray.push(
+              database.users().search({
+                classroomUserId: submission.userId,
+              })
+            );
+          });
+          return Promise.all(promisesArray);
         })
-        .then((querySnap: firebase.firestore.QuerySnapshot) => {
+        .then((querySnapArray: Array<firebase.firestore.QuerySnapshot>) => {
           // Create the object to convert from classroomUserId to studentId
           const classroomUserIdToStudentId: AnyJsonObj = {};
-          querySnap.forEach((doc) => {
-            classroomUserIdToStudentId[doc.data().classroomUserId] =
-              doc.data().studentId;
+          querySnapArray.forEach((querySnap) => {
+            if (querySnap.size === 1) {
+              const doc = querySnap.docs[0];
+              classroomUserIdToStudentId[doc.data().classroomUserId] =
+                doc.data().studentId;
+            }
           });
           this.$set(
             this.students,
