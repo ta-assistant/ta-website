@@ -1,6 +1,7 @@
 import firebase from "firebase";
 import { Classroom } from "./DataStructure/classroom/classroom";
 import { Work } from "./DataStructure/work/work";
+import { UserManagement } from "./DataStructure/Users/user";
 
 export class TaAssistantDb {
   private _firestore: firebase.firestore.Firestore;
@@ -14,5 +15,9 @@ export class TaAssistantDb {
 
   work(workId?: string): Work {
     return new Work(this._firestore, workId);
+  }
+
+  users(): UserManagement {
+    return new UserManagement(this._firestore);
   }
 }
