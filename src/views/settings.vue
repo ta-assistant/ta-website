@@ -4,6 +4,8 @@
 			<h1 class="md-title">Settings</h1>
 			<p>userId: {{userId}}</p>
 			<p>studentId: {{studentId}}</p>
+			<p>Name: {{name}}</p>
+			<p>Surname: {{surname}}</p>
 			<p class="warning">Please remember to keep your API key secret.</p>
 			<p>apiKey: {{apiKey}}</p>
 			<md-button class="md-primary md-raised m-0">Get API Key</md-button>
@@ -24,6 +26,8 @@ export default class Settings extends Vue {
 	// TODO: Find a way to fetch this from API. Good luck.
 	userId: string = "1234"
 	studentId: string = "4321"
+	name: string = "Rontakorn"
+	surname: string = "Raysang"
 	apiKey: string = "rseitnersntse"
 	
 	getApiKey() {
