@@ -23,6 +23,7 @@
       </md-app-drawer>
 
       <md-app-content>
+        <Breadcrumbs />
         <slot></slot>
       </md-app-content>
     </md-app>

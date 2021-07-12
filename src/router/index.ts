@@ -10,7 +10,7 @@ const routes: Array<RouteConfig> = [
     path: "/",
     name: "Home",
     meta: {
-      breadcumb: "Home"
+      breadcrumb: "Home",
     },
     component: Home,
   },
@@ -18,51 +18,61 @@ const routes: Array<RouteConfig> = [
     path: "/signIn",
     name: "SignIn",
     meta: {
-      breadcumb: "Sign In"
-    }
+      breadcrumb: "Sign In",
+    },
     component: SignIn,
   },
   {
     path: "/course",
     name: "course",
     meta: {
-      breadcumb: "Course",
+      breadcrumb: "Course",
     },
     component: () =>
       import(/* webpackChunkName: "course" */ "@/views/course.vue"),
-  },
-  {
-    path: "/course/:courseId",
-    name: "course_detail",
-    meta: {
-      breadcumb: "Course Detail"
-    },
-    component: () =>
-      import(/* webpackChunkName: "course" */ "@/views/course/detail.vue"),
-  },
-  {
-    path: "/course/:courseId/work/:workId",
-    name: "WorkSubmission",
-    meta: {
-      breadcumb: "Work Submission"
-    },
-    component: () =>
-      import(/* webpackChunkName: "work" */ "@/views/course/submission.vue"),
-  },
-  {
-    path: "/course/:courseId/work/:workId/submission/:submissionId",
-    name: "exercise",
-    meta: {
-      breadcumb: "Submission Detail"
-    },
-    component: () =>
-      import(/* webpackChunkName: "work" */ "@/views/course/work.vue"),
+    children: [
+      {
+        path: ":courseId",
+        name: "course_detail",
+        meta: {
+          breadcrumb: "Course Detail",
+        },
+        component: () =>
+          import(/* webpackChunkName: "course" */ "@/views/course/detail.vue"),
+        children: [
+          {
+            path: "work/:workId",
+            name: "WorkSubmission",
+            meta: {
+              breadcrumb: "Work Submission",
+            },
+            component: () =>
+              import(
+                /* webpackChunkName: "work" */ "@/views/course/submission.vue"
+              ),
+            children: [
+              {
+                path: "/course/:courseId/work/:workId/submission/:submissionId",
+                name: "exercise",
+                meta: {
+                  breadcrumb: "Submission Detail",
+                },
+                component: () =>
+                  import(
+                    /* webpackChunkName: "work" */ "@/views/course/work.vue"
+                  ),
+              },
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     path: "/about",
     name: "About",
     meta: {
-      breadcumb: "About"
+      breadcrumb: "About",
     },
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -74,7 +84,7 @@ const routes: Array<RouteConfig> = [
     path: "/settings",
     name: "Settings",
     meta: {
-      breadcumb: "Settings"
+      breadcrumb: "Settings",
     },
     component: () =>
       import(/* webpackChunkName: "setting" */ "../views/settings.vue"),
