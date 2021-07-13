@@ -16,3 +16,8 @@ export type StudentSubmission = {
     | "MULTIPLE_CHOICE_QUESTION";
   associatedWithDeveloper: boolean;
 };
+
+export type SubmissionUpdateMask = {
+  draftGrade?: number;
+  assignedGrade?: number;
+};
