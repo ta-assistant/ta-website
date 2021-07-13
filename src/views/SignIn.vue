@@ -68,7 +68,6 @@ export default Vue.extend({
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  opacity: 60%;
 }
 
 .signInBox {
