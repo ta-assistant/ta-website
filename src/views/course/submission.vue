@@ -11,24 +11,12 @@
           ></md-icon
         >
       </h1>
-      <md-progress-bar :md-value="80"></md-progress-bar>
-      <div class="menu">
-        <div class="submenu">
-          <md-button class="md-raised md-primary"
-            >Download all submissions</md-button
-          >
-          <md-button class="md-raised md-primary"
-            >Download scores as CSV</md-button
-          >
-          <md-button class="md-raised md-accent"
-            >Delete all submissions</md-button
-          >
-        </div>
-        <div class="submenu"></div>
-      </div>
       <submission-table
         :submissions="submissions.displaySubmissionsList"
         :isSupportTaFunction="work.associatedWithDeveloper"
+        :firebaseUser="firebaseUser"
+        :authCredential="authCredential"
+        :refreshData="refrashData"
       />
     </div>
   </layout>
@@ -78,6 +66,8 @@ export default Vue.extend({
       students: {
         classroomUserIdToStudetnId: {},
       },
+      firebaseUser: {} as firebase.User,
+      authCredential: {} as oauthCredential,
     };
   },
   methods: {
@@ -85,6 +75,8 @@ export default Vue.extend({
       firebaseUser: firebase.User,
       authCredential: oauthCredential
     ) {
+      this.$set(this, "firebaseUser", firebaseUser);
+      this.$set(this, "authCredential", authCredential);
       const firestore = firebase.firestore();
       const classroomApi = new ClassroomApi(authCredential);
       const database = new TaAssistantDb(firestore);
@@ -181,6 +173,7 @@ export default Vue.extend({
         }
         dataToDisplay.push({
           studentId: studentId,
+          submissionId: submission.id,
           isValidUserId: isValidUserId,
           state: submission.state,
           taScore: taScore,
@@ -244,6 +237,9 @@ export default Vue.extend({
         },
         dialogBoxActions: actions,
       });
+    },
+    refrashData() {
+      return this.callbackHandler(this.firebaseUser, this.authCredential);
     },
   },
 });
