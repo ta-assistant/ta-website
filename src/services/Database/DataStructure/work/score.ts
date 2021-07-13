@@ -27,6 +27,24 @@ export class Score extends Database {
       .get();
   }
 
+  markAsSubmittedToClassroom(by: string): Promise<void> {
+    if (this.studentId === null) {
+      throw Error(
+        "To mark as submitted to classroom, The studentId is required"
+      );
+    }
+    return this.getFirestore()
+      .collection("Works")
+      .doc(this.workId)
+      .collection("scores")
+      .doc(this.studentId)
+      .update({
+        classroomScoreSubmit: true,
+        classroomScoreSubmitTimestamp: Date.now(),
+        classroomScoreSubmitBy: by,
+      });
+  }
+
   list(): Promise<firebase.firestore.QuerySnapshot> {
     return this.getFirestore()
       .collection("Works")
