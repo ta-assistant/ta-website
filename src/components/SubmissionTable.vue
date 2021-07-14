@@ -6,7 +6,10 @@
         <md-button class="md-raised md-primary"
           >Download all submissions</md-button
         >
-        <md-button class="md-raised md-primary" @click="bulkActionConfirmDialog"
+        <md-button
+          class="md-raised md-primary"
+          v-if="isSupportTaFunction"
+          @click="bulkActionConfirmDialog"
           >Submit all available score to classroom</md-button
         >
       </div>
