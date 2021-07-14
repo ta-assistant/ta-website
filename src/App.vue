@@ -19,4 +19,17 @@ html {
   background-size: cover;
   height: 100%;
 }
+
+.breadcrumb {
+  display: flex;
+  list-style: none;
+  padding: 1rem 0;
+}
+.breadcrumb-item {
+  margin-right: .5rem;
+}
+.breadcrumb-item:not(:last-child)::after {
+  content: "/";
+  margin-left: .5rem;
+}
 </style>
