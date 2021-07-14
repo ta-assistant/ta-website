@@ -52,7 +52,7 @@ const routes: Array<RouteConfig> = [
               ),
             children: [
               {
-                path: ":workId/submission/:submissionId",
+                path: "submission/:submissionId",
                 name: "exercise",
                 meta: {
                   breadcrumb: "Submission Detail",
