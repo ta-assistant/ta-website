@@ -20,42 +20,44 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from "vue";
-import markdown from "../utils/markdown";
+import Vue, { PropType } from 'vue'
+import markdown from "../utils/markdown"
+import Component from "vue-class-component"
+import { Prop } from "vue-property-decorator"
+import "highlight.js/styles/atom-one-dark.css";
 
 type EditorStatus = "edit" | "preview";
 
-export default Vue.extend({
-  name: "CommentEditor",
-  props: {
-    value: {
-      type: String as PropType<string>,
-      required: true,
-      default: "",
-    },
-  },
-  data: () => {
-    return {
-      text: "",
-      status: "edit" as EditorStatus,
-    };
-  },
-  computed: {
-    statusButtonText() {
-      return this.status === "edit" ? "Preview" : "Edit";
-    },
-    renderedText() {
-      return markdown.render(this.value);
-    },
-  },
-  methods: {
-    statusButtonAction() {
-      if (this.$data.status === "edit") {
-        this.$data.status = "preview";
-      } else {
-        this.$data.status = "edit";
-      }
-    },
-  },
-});
+@Component({
+	props: {
+		value: {
+			type: String as PropType<string>,
+			required: true,
+			default: ""
+		}
+	}
+})
+export default class CommentEditor extends Vue{
+	@Prop({
+		type: String as PropType<string>,
+		required: true,
+		default: ""
+	}) 
+	value!: string
+	text = ""
+	status = "edit" as EditorStatus
+	get statusButtonText() {
+		return this.status === 'edit' ? 'Preview' : 'Edit'
+	}
+	get renderedText() {
+		return markdown.render(this.value)
+	}
+	statusButtonAction()  {
+		if (this.status === 'edit') {
+			this.status = 'preview'
+		} else {
+			this.status = 'edit'
+		}
+	}
+}
 </script>

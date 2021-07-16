@@ -2,10 +2,6 @@ import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Home from "../views/Home.vue";
 import SignIn from "../views/SignIn.vue";
-import course from "../views/course.vue";
-import CourseDetail from "../views/course/detail.vue";
-import WorkDetail from "../views/course/work.vue";
-import WorkSubmission from "../views/course/submission.vue";
 
 Vue.use(VueRouter);
 
@@ -23,22 +19,26 @@ const routes: Array<RouteConfig> = [
   {
     path: "/course",
     name: "course",
-    component: course,
+    component: () =>
+      import(/* webpackChunkName: "course" */ "@/views/course.vue"),
   },
   {
     path: "/course/:courseId",
     name: "course_detail",
-    component: CourseDetail,
+    component: () =>
+      import(/* webpackChunkName: "course" */ "@/views/course/detail.vue"),
   },
   {
     path: "/course/:courseId/work/:workId",
     name: "WorkSubmission",
-    component: WorkSubmission,
+    component: () =>
+      import(/* webpackChunkName: "work" */ "@/views/course/submission.vue"),
   },
   {
     path: "/course/:courseId/work/:workId/submission/:submissionId",
     name: "exercise",
-    component: WorkDetail,
+    component: () =>
+      import(/* webpackChunkName: "work" */ "@/views/course/work.vue"),
   },
   {
     path: "/about",

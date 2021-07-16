@@ -1,15 +1,21 @@
-import md from "markdown-it";
+/* eslint-disable no-empty */
+import md  from "markdown-it";
 import hljs from "highlight.js";
 
 const markdown = md({
   highlight: (str, lang) => {
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return hljs.highlight(str, { language: lang }).value;
-        // eslint-disable-next-line no-empty
-      } catch (_) {}
+        return (
+          '<pre class="hljs"><code>' +
+          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+          "</code></pre>"
+        );
+      } catch (__) {}
     }
-    return "";
+    return (
+      '<pre class="hljs"><code>' + md().utils.escapeHtml(str) + "</code></pre>"
+    );
   },
 });
 
