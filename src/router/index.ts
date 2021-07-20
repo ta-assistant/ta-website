@@ -23,19 +23,19 @@ const routes: Array<RouteConfig> = [
       import(/* webpackChunkName: "course" */ "@/views/course.vue"),
   },
   {
-    path: "/course/:id",
+    path: "/course/:courseId",
     name: "course_detail",
     component: () =>
       import(/* webpackChunkName: "course" */ "@/views/course/detail.vue"),
   },
   {
-    path: "/work/:id",
+    path: "/course/:courseId/work/:workId",
     name: "WorkSubmission",
     component: () =>
       import(/* webpackChunkName: "work" */ "@/views/course/submission.vue"),
   },
   {
-    path: "/work/:id/:studentId",
+    path: "/course/:courseId/work/:workId/submission/:submissionId",
     name: "exercise",
     component: () =>
       import(/* webpackChunkName: "work" */ "@/views/course/work.vue"),
